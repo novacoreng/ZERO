@@ -1,32 +1,26 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 7 — Secure Messaging Engine.
+Phase 8 — Message Expiration.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Ciphertext-only message envelope
-- Delivery lifecycle and retry contract
-- Idempotency and ordering metadata
-- Delivery-attempt migration
-- Messaging contract tests
-- Phase lock and project-state documentation
-
-## Verification
-- Envelope validation: PASS by contract
-- Retry policy: PASS by contract
-- Server plaintext exclusion: PASS by schema/policy
-- Idempotency constraints: REVIEWED
-- Full clean CI/runtime: DEFERRED by package-network limitation
+- Expiration policy
+- Authoritative expiry timestamps
+- Durable expiration state machine
+- FOR_ME and FOR_EVERYONE semantics
+- Offline reconciliation contract
+- Database migration 007
+- Contract tests and documentation
 
 ## Do not redo
-- Do not store message plaintext server-side.
-- Do not add server-side content search or content analytics.
-- Do not make read receipts implicit.
-- Do not treat a failed/interrupted transport attempt as successful delivery.
-- Do not bypass the E2EE session boundary.
+- Do not use client clocks as authoritative server expiration.
+- Do not claim FOR_ME deletes remote copies.
+- Do not skip durable state transitions.
+- Do not store plaintext to evaluate expiration.
+- Do not implement cryptographic destruction here; that is Phase 9.
 
 ## Next action
-Begin Phase 8 — Message Expiration.
+Begin Phase 9 — Cryptographic Destruction.
