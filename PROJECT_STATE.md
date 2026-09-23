@@ -1,8 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 10 — Universal File Engine
-- Status: LOCKED — universal opaque file object contract, validation, lifecycle, migration, tests and documentation completed.
-- Security posture: Phases 2-10 boundaries locked; client-side file encryption, runtime upload transport, secure media handling, production crypto integration and independent security review remain required.
-- Verification: file type metadata, size/name/chunk bounds, folder packaging boundary and server non-execution rules reviewed.
+- Current phase: Phase 11 — Universal File Encryption
+- Status: LOCKED — client-side file-encryption boundary, per-object key model, AEAD envelope contract, migration, tests and documentation completed.
+- Security posture: Phases 2-11 boundaries locked; production cryptographic provider integration, runtime encrypted upload, secure metadata handling and independent security review remain required.
+- Verification: key/nonce constraints, authenticated envelope, associated-data binding and server secret exclusion reviewed.
 - External limitation: full clean CI/runtime remains dependent on restoring package installation/network access in the build environment.
-- Next phase: Phase 11 — Universal File Encryption
+- Next phase: Phase 12 — Large File / Resumable Upload
