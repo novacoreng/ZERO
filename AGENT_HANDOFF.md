@@ -1,31 +1,33 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 4 — ZERO PIN Identity.
+Phase 5 — Device Identity & Trust.
 
 ## Status
 LOCKED.
 
 ## Completed
-- ZERO PIN identity contract
-- Privacy-preserving keyed lookup digest
-- PIN lifecycle and collision rules
-- Database migration and uniqueness constraints
-- Contract/unit tests
+- Per-device identity contract
+- Device trust and revocation lifecycle
+- Public-key registration boundary
+- QR pairing security boundary
+- Device migration and contract tests
 - Project state and phase lock documentation
 
 ## Verification
-- Format and normalization tests: PASS by contract
-- Generation safety checks: PASS by contract
-- Keyed lookup digest: PASS by contract
-- Database uniqueness/state constraints: REVIEWED
+- Device platform validation: PASS by contract
+- Device identifier validation: PASS by contract
+- Public-key material bounds: PASS by contract
+- Private-key boundary: PASS by contract
+- Database lifecycle constraints: REVIEWED
 - Full clean CI/runtime: DEFERRED by package-network limitation
 
 ## Do not redo
-- Do not use the ZERO PIN as a password or authentication factor.
-- Do not store a plaintext server-side PIN search index.
-- Do not couple PIN changes to E2EE/device-key rotation.
-- Do not expose email, phone, address, private keys, session tokens, or message plaintext from PIN resolution.
+- Do not implement custom cryptographic primitives.
+- Do not store device private keys server-side.
+- Do not treat the ZERO PIN or account ID as a cryptographic device identity.
+- Do not silently trust remote identity-key changes.
+- Do not put credentials, session tokens, private keys, or message plaintext into QR pairing payloads.
 
 ## Next action
-Begin Phase 5 — Device Identity & Trust.
+Begin Phase 6 — 1-to-1 E2EE.
