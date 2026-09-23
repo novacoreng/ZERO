@@ -1,10 +1,10 @@
 # ZERO Project State
 
-- Current phase: Phase 41 — Production Hardening
-- Status: LOCKED — production release evidence contract, runtime hardening policy, deployment audit model, migration 039 and contract tests completed.
-- Production posture: hardening boundary established; production launch is not claimed.
-- Security posture: unresolved CRITICAL/HIGH hardening findings block promotion; external penetration testing and independent cryptographic audit remain incomplete.
-- Verification: immutable release identity, artifact digest, dependency/secrets/security/migration evidence, backup/restore, rollback, observability and beta-exit gates are explicit.
+- Current phase: Phase 42 — Public Security Launch
+- Status: LOCKED — public security architecture, vulnerability disclosure policy, transparency model, advisory lifecycle, migration 040 and contract tests completed.
+- Public security posture: architecture and disclosure processes are defined; public launch claims remain evidence-gated.
+- Security posture: independent cryptographic audit and external penetration testing remain incomplete; production readiness is not claimed.
+- Verification: disclosure lifecycle, advisory identifiers, public-claim evidence gate and reporter-privacy boundaries are covered by contract tests.
 - Brand: ZERO disappearing-message logo locked in `brand/logo/`.
 - Security design addition: cryptographic shredder/mixing documented in `docs/CRYPTOGRAPHIC-SHREDDER-DESIGN.md`.
-- Next phase: Phase 42 — Public Security Launch
+- Next phase: Phase 43 — Production Launch
