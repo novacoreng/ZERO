@@ -1,8 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 32 — Admin Console
-- Status: LOCKED — admin roles, least-privilege action matrix, admin identity, action requests, audit events, E2EE boundary, dual-control boundary, migration, tests and documentation completed.
-- Security posture: administrators cannot access message plaintext, private keys or recovery secrets.
-- Verification: role separation, auditor read-only behavior, support restrictions, audited actions and dual-control emergency boundary reviewed.
-- Limitations: production admin identity provider, privileged network, dual-control runtime, emergency controls, SIEM, UI, legal review and independent security audit remain required.
-- Next phase: Phase 33 — Audit & Security Logging
+- Current phase: Phase 33 — Audit & Security Logging
+- Status: LOCKED — security audit domains, tamper-evident event model, correlation IDs, sequences, retention classes, sensitive-data exclusions, migration, tests and documentation completed.
+- Security posture: security evidence is separated from ordinary operational logs and excludes private communications and secrets.
+- Verification: immutable/tamper-evident boundary, correlation, sequence, retention and sensitive-data exclusions reviewed.
+- Limitations: production append-only enforcement, signing/key management, SIEM, alert delivery, retention automation and independent security review remain required.
+- Next phase: Phase 34 — Accessibility & Localization
