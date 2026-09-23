@@ -10,3 +10,5 @@ export * from "./load-reliability.js";
 export * from "./penetration-testing.js";
 
 export * from "./independent-audit.js";
+
+export * from "./beta.js";
