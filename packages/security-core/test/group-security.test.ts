@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import{GROUP_SECURITY_POLICY,validateGroupId,validateGroupEpoch,validateMemberRole,nextGroupEpoch,canReceiveEpochKeys}from "../src/group-security.js";
+test("validates group identity",()=>{assert.equal(validateGroupId("group_12345678901234"),true);assert.equal(validateGroupId("bad"),false)});
+test("validates epochs",()=>{assert.equal(validateGroupEpoch(0),true);assert.equal(validateGroupEpoch(-1),false);assert.equal(nextGroupEpoch(4,true),5);assert.equal(nextGroupEpoch(4,false),4)});
+test("validates member roles",()=>{assert.equal(validateMemberRole("OWNER"),true);assert.equal(validateMemberRole("MEMBER"),true);assert.equal(validateMemberRole("NOPE"),false)});
+test("only active members receive current epoch keys",()=>{const m={groupId:"g",accountId:"a",deviceId:"d",role:"MEMBER" as const,state:"ACTIVE" as const,joinedAt:""};assert.equal(canReceiveEpochKeys(m,"CURRENT"),true);assert.equal(canReceiveEpochKeys({...m,state:"REMOVED"},"CURRENT"),false);assert.equal(canReceiveEpochKeys(m,"RETIRED"),false)});
+test("MLS is the group protocol boundary",()=>{assert.equal(GROUP_SECURITY_POLICY.protocol,"MLS-RFC-9420");assert.equal(GROUP_SECURITY_POLICY.serverPlaintext,false)});
