@@ -1,27 +1,27 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 28 — Calls.
+Phase 29 — Privacy-Preserving Analytics.
 
 ## Status
 LOCKED
 
 ## Completed
-- 1-to-1 audio/video call model
-- Encrypted media boundary
-- Device/session authorization
-- Call lifecycle and expiry
-- Reconnection state
-- Minimal call metadata
-- Migration 027
+- Analytics purpose taxonomy
+- Minimal aggregation
+- Minimum cohort threshold
+- Retention policy
+- Optional product-usage analytics preference
+- Content/graph/location/ad prohibitions
+- Migration 028
 - Contract tests and documentation
 
 ## Do not redo
-- Never store call media on the server.
-- Never store call keys plaintext server-side.
-- Revoked devices cannot call.
-- Expired call offers fail closed.
-- Terminal calls cannot restart.
+- Never collect message, file or call content for analytics.
+- Never build advertising profiles from ZERO analytics.
+- Product-usage analytics default to disabled.
+- Aggregates require the minimum cohort threshold.
+- Security and abuse telemetry remain separate.
 
 ## Next action
-Begin Phase 29 — Privacy-Preserving Analytics.
+Begin Phase 30 — Infrastructure Security.
