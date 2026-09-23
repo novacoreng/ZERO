@@ -1,8 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 36 — Security Testing
-- Status: LOCKED — security test domains, release-gate model, scanning requirements, auth/authz/crypto/file/API/web/privacy/abuse coverage, migration, tests and documentation completed.
-- Security posture: unresolved CRITICAL findings block release; security passes require evidence.
-- Verification: blocking severity logic, explicit security domains and required test coverage reviewed.
-- Limitations: actual CI/security execution, browser/device DAST, dependency scanning, penetration testing and independent security audit remain required.
-- Next phase: Phase 37 — Load & Reliability
+- Current phase: Phase 37 — Load & Reliability
+- Status: LOCKED — load workload model, bounded concurrency/queues, backpressure, retry budgets, reliability states, load metrics schema, tests and documentation completed.
+- Reliability posture: unresolved CRITICAL load/reliability findings block release; capacity claims require recorded runtime evidence.
+- Verification: load profile validation, queue backpressure, bounded retries, workload classification and release blocking logic reviewed by contract tests.
+- Limitations: actual distributed load generation, browser/device load, database/object-storage capacity tests, soak testing and production-like runtime evidence remain required.
+- Next phase: Phase 38 — Penetration Testing
