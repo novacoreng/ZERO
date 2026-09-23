@@ -1,28 +1,31 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 23 — Abuse, Spam & Fraud.
+Phase 24 — Reporting.
 
 ## Status
 LOCKED
 
 ## Completed
-- Trust-level model
-- Abuse signal taxonomy
-- Rate-limit/challenge/throttle/block/review actions
-- Anti-enumeration boundary
-- Metadata-only automated abuse signals
-- Temporary restriction boundary
-- Fraud-control boundary
-- Migration 022
+- Report categories
+- Privacy-preserving report submission
+- Explicit encrypted evidence
+- Least-privilege moderation boundary
+- Reporter privacy
+- Report lifecycle
+- Appeals
+- False-report abuse boundary
+- Retention policy
+- Emergency security reporting
+- Migration 023
 - Contract tests and documentation
 
 ## Do not redo
-- Never inspect message plaintext for automated abuse detection.
-- Never give admins message decryption capability.
-- Never expose account/PIN existence through enumeration-friendly responses.
-- Never make restrictions permanent without recovery/appeal handling.
-- Never treat trust level as a statement about identity or intent.
+- Never grant reports universal message decryption.
+- Never expose reporter identity unnecessarily.
+- Never store submitted evidence as plaintext.
+- Never treat a single report as proof of wrongdoing.
+- Never retain evidence indefinitely without policy/legal justification.
 
 ## Next action
-Begin Phase 24 — Reporting.
+Begin Phase 25 — Security Center.
