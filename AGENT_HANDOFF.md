@@ -1,29 +1,28 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 41 — Production Hardening.
+Phase 42 — Public Security Launch.
 
 ## Status
 LOCKED
 
 ## Completed
-- Production release evidence contract
-- Immutable release and artifact identity
-- Security/migration promotion gates
-- Backup/restore and rollback evidence requirements
-- Runtime hardening requirements
-- Deployment audit model
-- Migration 039
+- Public security architecture and whitepaper
+- Coordinated vulnerability disclosure policy
+- Security advisory lifecycle
+- Transparency evidence model
+- Public-claim evidence gate
+- Migration 040
 - Contract tests and documentation
 - ZERO brand identity locked in `brand/`
 - Cryptographic shredder design locked in `docs/CRYPTOGRAPHIC-SHREDDER-DESIGN.md`
 
 ## Do not redo
-- Do not claim production readiness from contract implementation alone.
-- Do not bypass unresolved CRITICAL/HIGH release gates.
-- Do not put production secrets or private keys into build artifacts.
-- Do not log private message/file/call content.
-- Do not claim external penetration testing or independent cryptographic audit has occurred.
+- Do not claim independent cryptographic audit completion.
+- Do not claim external penetration-test completion.
+- Do not claim production readiness or certification without evidence.
+- Do not publish sensitive infrastructure details or user content.
+- Do not expose private keys, recovery secrets, tokens, or private conversations in security reports.
 
 ## Next action
-Begin Phase 42 — Public Security Launch.
+Begin Phase 43 — Production Launch.
