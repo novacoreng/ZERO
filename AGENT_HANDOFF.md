@@ -1,27 +1,27 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 26 — Backup & Recovery.
+Phase 27 — ZERO Business.
 
 ## Status
 LOCKED
 
 ## Completed
-- Encrypted backup model
-- Recovery levels
-- Explicit recovery authorization
-- Trusted contacts
-- Session revocation on recovery
-- Backup/recovery lifecycle
-- Migration 025
+- Business organization model
+- Verification lifecycle
+- Business roles
+- Security-admin separation
+- Business policy boundary
+- E2EE privacy boundary
+- Migration 026
 - Contract tests and documentation
 
 ## Do not redo
-- Never store plaintext backup or recovery secrets on the server.
-- Never expose private keys to the server.
-- Trusted contacts do not automatically receive decryption capability.
-- Recovery must invalidate prior sessions.
-- Expired recovery requests must fail closed.
+- Business administrators never receive message plaintext or private keys.
+- E2EE must remain unchanged for Business.
+- Auditor access is read-only.
+- Security privileges must remain role-separated.
+- Verification evidence must be minimized.
 
 ## Next action
-Begin Phase 27 — ZERO Business.
+Begin Phase 28 — Calls.
