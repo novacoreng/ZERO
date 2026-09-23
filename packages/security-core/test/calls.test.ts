@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{CALL_POLICY,validateCallId,validateCallTtl,canTransitionCall,isTerminalCallState}from "../src/calls.js";
+test("call identifiers and TTL are bounded",()=>{assert.equal(validateCallId("call_12345678901234"),true);assert.equal(validateCallId("x"),false);assert.equal(validateCallTtl(30),true);assert.equal(validateCallTtl(121),false)});
+test("call lifecycle supports reconnect",()=>{assert.equal(canTransitionCall("CONNECTED","RECONNECTING"),true);assert.equal(canTransitionCall("RECONNECTING","CONNECTED"),true);assert.equal(canTransitionCall("ENDED","CONNECTED"),false)});
+test("terminal states are terminal",()=>{assert.equal(isTerminalCallState("ENDED"),true);assert.equal(isTerminalCallState("MISSED"),true);assert.equal(isTerminalCallState("RINGING"),false)});
+test("media is never plaintext server-side",()=>{assert.equal(CALL_POLICY.mediaEndToEndEncrypted,true);assert.equal(CALL_POLICY.serverMediaRelayOnly,true);assert.equal(CALL_POLICY.serverStoresMedia,false);assert.equal(CALL_POLICY.callKeysNeverStoredServerPlaintext,true)});
