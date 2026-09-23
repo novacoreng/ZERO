@@ -1,28 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 32 — Admin Console.
+Phase 33 — Audit & Security Logging.
 
 ## Status
 LOCKED
 
 ## Completed
-- Admin roles
-- Least-privilege action matrix
-- Admin identity model
-- Action request model
-- Administrative audit events
-- E2EE plaintext prohibition
-- Dual-control emergency boundary
-- Migration 031
+- Security audit domains
+- Immutable/tamper-evident event model
+- Correlation IDs
+- Monotonic sequences
+- Previous/event digests
+- Retention classes
+- Sensitive-data exclusions
+- Critical alerting boundary
+- Migration 032
 - Contract tests and documentation
 
 ## Do not redo
-- Administrators never receive message plaintext, private keys or recovery secrets.
-- Auditors cannot perform state-changing actions.
-- Support cannot perform privileged security actions.
-- Administrative actions must be audited.
-- Emergency controls require dual control.
+- Keep security audit separate from ordinary logs.
+- Never log message plaintext, private keys, tokens or recovery secrets.
+- Every security event requires correlation context and retention classification.
+- Preserve tamper-evident sequencing.
+- Critical alerts must preserve privacy exclusions.
 
 ## Next action
-Begin Phase 33 — Audit & Security Logging.
+Begin Phase 34 — Accessibility & Localization.
