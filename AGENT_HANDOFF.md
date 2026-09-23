@@ -1,33 +1,32 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 6 — 1-to-1 E2EE.
+Phase 7 — Secure Messaging Engine.
 
 ## Status
 LOCKED.
 
 ## Completed
-- 1-to-1 E2EE protocol boundary
-- PQXDH/Double Ratchet/Sesame integration contract
-- Ciphertext-only server envelope
-- Prekey inventory and session migrations
-- E2EE contract tests
+- Ciphertext-only message envelope
+- Delivery lifecycle and retry contract
+- Idempotency and ordering metadata
+- Delivery-attempt migration
+- Messaging contract tests
 - Phase lock and project-state documentation
 
 ## Verification
-- E2EE profile validation: PASS by contract
-- Ciphertext-only envelope: PASS by contract
-- Session/device separation: REVIEWED
-- Prekey lifecycle schema: REVIEWED
-- Identity-change verification rule: PASS by policy
-- Full clean CI/runtime and production crypto interoperability: DEFERRED
+- Envelope validation: PASS by contract
+- Retry policy: PASS by contract
+- Server plaintext exclusion: PASS by schema/policy
+- Idempotency constraints: REVIEWED
+- Full clean CI/runtime: DEFERRED by package-network limitation
 
 ## Do not redo
-- Do not implement custom cryptographic primitives.
-- Do not store plaintext messages on the server.
-- Do not upload device private keys.
-- Do not silently accept remote identity-key changes.
-- Do not claim production E2EE until the approved provider, runtime interoperability, and independent review are complete.
+- Do not store message plaintext server-side.
+- Do not add server-side content search or content analytics.
+- Do not make read receipts implicit.
+- Do not treat a failed/interrupted transport attempt as successful delivery.
+- Do not bypass the E2EE session boundary.
 
 ## Next action
-Begin Phase 7 — Secure Messaging Engine.
+Begin Phase 8 — Message Expiration.
