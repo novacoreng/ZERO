@@ -1,26 +1,26 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 9 — Cryptographic Destruction.
+Phase 10 — Universal File Engine.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Destruction lifecycle
-- Message/file/local-cache destruction target contracts
-- Terminal/idempotent state transitions
-- Key-version lifecycle metadata
-- Destruction evidence boundary
-- Database migration 008
+- Universal opaque file object contract
+- Individual file support
+- Folder packaging boundary
+- File lifecycle
+- Validation rules
+- Migration 009
 - Contract tests and documentation
 
 ## Do not redo
-- Do not store secret key material on the server.
-- Do not claim storage deletion alone is cryptographic destruction.
-- Do not resurrect DESTROYED records.
-- Do not implement custom cryptography.
-- Do not treat digest evidence as recoverable key material.
+- Do not upload folders as directories.
+- Do not execute or dynamically load uploaded files on the server.
+- Do not treat MIME type as a security trust boundary.
+- Do not implement client-side encryption in this phase.
+- Do not implement resumable upload runtime before Phase 12.
 
 ## Next action
-Begin Phase 10 — Universal File Engine.
+Begin Phase 11 — Universal File Encryption.
