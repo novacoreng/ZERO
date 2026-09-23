@@ -1,29 +1,25 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 36 — Security Testing.
+Phase 37 — Load & Reliability.
 
 ## Status
 LOCKED
 
 ## Completed
-- Security test-domain model
-- Release-gate model
-- Secret/dependency/SAST/DAST requirements
-- Auth/authz testing requirements
-- Crypto/E2EE boundary testing
-- File/upload testing
-- Web/API security testing
-- Privacy-leak testing
-- Abuse-control testing
-- Migration 034
+- Load workload and reliability state model
+- Bounded concurrency and queue contracts
+- Backpressure and retry-storm protection
+- Retry budget and idempotency requirements
+- Load metrics and finding persistence
+- Migration 035
 - Contract tests and documentation
 
 ## Do not redo
-- Unresolved CRITICAL findings block release.
-- Never claim a security pass without evidence.
-- E2EE plaintext/private-key leakage tests are mandatory.
-- Keep security scanning in the release path.
+- Do not claim measured throughput or latency without runtime evidence.
+- Unresolved CRITICAL reliability findings block release.
+- Keep queues bounded and retries idempotent.
+- Capacity evidence is required before production performance claims.
 
 ## Next action
-Begin Phase 37 — Load & Reliability.
+Begin Phase 38 — Penetration Testing.
