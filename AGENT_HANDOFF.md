@@ -1,29 +1,28 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 31 — Disaster Recovery.
+Phase 32 — Admin Console.
 
 ## Status
 LOCKED
 
 ## Completed
-- RPO/RTO targets
-- Encrypted backup tiers
-- Cross-region recovery boundary
-- Backup integrity states
-- Restore authorization
-- Restore verification
-- Recovery-test model
-- Incident recovery model
-- Migration 030
+- Admin roles
+- Least-privilege action matrix
+- Admin identity model
+- Action request model
+- Administrative audit events
+- E2EE plaintext prohibition
+- Dual-control emergency boundary
+- Migration 031
 - Contract tests and documentation
 
 ## Do not redo
-- Only VERIFIED backups may restore.
-- Corrupted or expired backups fail closed.
-- Never back up plaintext private keys.
-- Never include message plaintext in recovery artifacts.
-- Production recovery must be tested.
+- Administrators never receive message plaintext, private keys or recovery secrets.
+- Auditors cannot perform state-changing actions.
+- Support cannot perform privileged security actions.
+- Administrative actions must be audited.
+- Emergency controls require dual control.
 
 ## Next action
-Begin Phase 32 — Admin Console.
+Begin Phase 33 — Audit & Security Logging.
