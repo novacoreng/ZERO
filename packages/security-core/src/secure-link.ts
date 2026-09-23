@@ -1,0 +1,8 @@
+export type LinkSafetyState="UNREVIEWED"|"SAFE"|"BLOCKED"|"EXPIRED";
+export type LinkKind="HTTPS"|"HTTP"|"MAILTO"|"TEL"|"OTHER";
+export type SecureLinkRecord={id:string;normalizedUrl:string;kind:LinkKind;state:LinkSafetyState;expiresAt?:string;previewAllowed:boolean;createdAt:string;};
+export const SECURE_LINK_POLICY=Object.freeze({httpsPreferred:true,allowHttp:false,allowJavascript:false,allowDataUrls:false,allowFileUrls:false,allowLocalhost:false,stripTrackingParameters:true,previewOptIn:false,previewFetcherIsolated:true,serverFollowsRedirects:false,logFullUrls:false,maxUrlLength:4096});
+const TRACKING=/^(utm_.*|fbclid|gclid|dclid|msclkid|mc_cid|mc_eid)$/i;
+export function normalizeSecureUrl(value:string):string{const u=new URL(value.trim());if(u.protocol==="http:"&&!SECURE_LINK_POLICY.allowHttp)throw new Error("HTTP links are not allowed");if(!["https:","http:","mailto:","tel:"].includes(u.protocol))throw new Error("Unsupported link protocol");if(["https:","http:"].includes(u.protocol)){if(["localhost","127.0.0.1","::1"].includes(u.hostname))throw new Error("Local links are not allowed");for(const key of [...u.searchParams.keys()])if(TRACKING.test(key))u.searchParams.delete(key);u.hash="";}const out=u.toString();if(out.length>SECURE_LINK_POLICY.maxUrlLength)throw new Error("URL exceeds maximum length");return out}
+export function classifyLink(value:string):LinkKind{const p=new URL(value).protocol;return p==="https:"?"HTTPS":p==="http:"?"HTTP":p==="mailto:"?"MAILTO":p==="tel:"?"TEL":"OTHER"}
+export function canPreviewLink(record:SecureLinkRecord,now:Date):boolean{return record.previewAllowed&&record.state==="SAFE"&&(!record.expiresAt||now.getTime()<new Date(record.expiresAt).getTime())}
