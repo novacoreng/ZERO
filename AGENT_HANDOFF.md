@@ -1,30 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 16 — Secure Link Handling.
+Phase 17 — Groups.
 
 ## Status
 LOCKED.
 
 ## Completed
-- URL parsing and normalization
-- Dangerous protocol rejection
-- Local-host rejection
-- Tracking-parameter minimization
-- Fragment removal
-- Preview policy
-- Redirect boundary
-- Expiration boundary
-- Privacy-safe logging policy
-- Migration 015
+- MLS RFC 9420 protocol boundary
+- Group lifecycle
+- Device-scoped membership
+- Owner/admin/member roles
+- Membership state
+- Epoch state
+- Membership-change epoch advancement
+- Removed-member key exclusion boundary
+- Migration 016
 - Contract tests and documentation
 
 ## Do not redo
-- Never allow javascript/data/file URLs.
-- Never blindly follow redirects.
-- Never log full URLs containing sensitive query data.
-- Never fetch previews without SSRF/network isolation.
-- Never treat an external destination as part of ZERO's trust boundary.
+- Never implement custom group cryptography.
+- Never store group secrets on the server.
+- Never send new epoch key material to removed members.
+- Never treat account IDs as cryptographic device identities.
+- Never claim MLS runtime integration before a reviewed provider is selected.
 
 ## Next action
-Begin Phase 17 — Groups.
+Begin Phase 18 — Temporary Conversations.
