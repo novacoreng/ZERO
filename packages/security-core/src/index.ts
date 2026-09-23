@@ -8,3 +8,5 @@ export const CUSTOM_CRYPTOGRAPHY_FORBIDDEN = true;
 export * from "./load-reliability.js";
 
 export * from "./penetration-testing.js";
+
+export * from "./independent-audit.js";
