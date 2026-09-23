@@ -1,29 +1,30 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 15 — Secure Media & Metadata.
+Phase 16 — Secure Link Handling.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Media trust boundary
-- Filename sanitization
-- MIME distrust boundary
-- EXIF/GPS/device metadata removal policy
-- Sanitization lifecycle
-- Derivative isolation
-- Thumbnail/preview policy
-- Quarantine boundary
-- Migration 014
+- URL parsing and normalization
+- Dangerous protocol rejection
+- Local-host rejection
+- Tracking-parameter minimization
+- Fragment removal
+- Preview policy
+- Redirect boundary
+- Expiration boundary
+- Privacy-safe logging policy
+- Migration 015
 - Contract tests and documentation
 
 ## Do not redo
-- Never trust client MIME as authoritative.
-- Never interpret uploaded filenames as paths.
-- Never expose GPS/device metadata by default.
-- Never generate derivatives from unsanitized media.
-- Never execute untrusted media.
+- Never allow javascript/data/file URLs.
+- Never blindly follow redirects.
+- Never log full URLs containing sensitive query data.
+- Never fetch previews without SSRF/network isolation.
+- Never treat an external destination as part of ZERO's trust boundary.
 
 ## Next action
-Begin Phase 16 — Secure Link Handling.
+Begin Phase 17 — Groups.
