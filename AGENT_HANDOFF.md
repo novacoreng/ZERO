@@ -1,27 +1,32 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 29 — Privacy-Preserving Analytics.
+Phase 30 — Infrastructure Security.
 
 ## Status
 LOCKED
 
 ## Completed
-- Analytics purpose taxonomy
-- Minimal aggregation
-- Minimum cohort threshold
-- Retention policy
-- Optional product-usage analytics preference
-- Content/graph/location/ad prohibitions
-- Migration 028
+- Environment separation
+- Secrets-management boundary
+- TLS requirement
+- Service identity and least privilege
+- Network segmentation
+- Rate-limit/DDoS boundary
+- Encryption-at-rest requirement
+- Security headers
+- Dependency/supply-chain controls
+- Immutable deployment requirement
+- Infrastructure audit events
+- Migration 029
 - Contract tests and documentation
 
 ## Do not redo
-- Never collect message, file or call content for analytics.
-- Never build advertising profiles from ZERO analytics.
-- Product-usage analytics default to disabled.
-- Aggregates require the minimum cohort threshold.
-- Security and abuse telemetry remain separate.
+- Never commit secrets.
+- Never log tokens, credentials, private keys, recovery secrets or message plaintext.
+- Never allow plaintext production transport.
+- Production exceptions require explicit reason and controlled expiry.
+- Keep production credentials isolated.
 
 ## Next action
-Begin Phase 30 — Infrastructure Security.
+Begin Phase 31 — Disaster Recovery.
