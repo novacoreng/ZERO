@@ -1,9 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 34 — Accessibility & Localization
-- Status: LOCKED — WCAG 2.2 AA-oriented foundation, accessibility preferences, locale architecture, Nigerian/English locale support, RTL-ready direction, translation privacy boundary, migration, tests and documentation completed.
-- Accessibility posture: keyboard/focus, screen-reader semantics, reduced motion, text scaling and high contrast are explicit requirements.
-- Localization posture: en-NG, en-US, en-GB, yo-NG, ha-NG and ig-NG are supported at the architecture level with en-US fallback.
-- Privacy posture: private message content and cryptographic material are excluded from translation services.
-- Limitations: full UI implementation, professional translations, RTL locale addition, accessibility audits/device testing and independent review remain required.
-- Next phase: Phase 35 — Web Client
+- Current phase: Phase 35 — Web Client
+- Status: LOCKED — Next.js web foundation, privacy-first onboarding surface, authentication entry, responsive/accessibility foundation and documentation completed.
+- Security posture: web source contains no private keys or secrets and does not fake production authentication/E2EE behavior.
+- Verification: responsive structure, keyboard focus, reduced-motion handling and security-boundary documentation reviewed.
+- Limitations: production authentication, E2EE runtime, device identity, messaging, file encryption/upload, calls, Data Drops, Security Center, Business integration, CSP/headers, browser/device testing and independent security review remain required.
+- Next phase: Phase 36 — Security Testing
