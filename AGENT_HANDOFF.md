@@ -1,32 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 30 — Infrastructure Security.
+Phase 31 — Disaster Recovery.
 
 ## Status
 LOCKED
 
 ## Completed
-- Environment separation
-- Secrets-management boundary
-- TLS requirement
-- Service identity and least privilege
-- Network segmentation
-- Rate-limit/DDoS boundary
-- Encryption-at-rest requirement
-- Security headers
-- Dependency/supply-chain controls
-- Immutable deployment requirement
-- Infrastructure audit events
-- Migration 029
+- RPO/RTO targets
+- Encrypted backup tiers
+- Cross-region recovery boundary
+- Backup integrity states
+- Restore authorization
+- Restore verification
+- Recovery-test model
+- Incident recovery model
+- Migration 030
 - Contract tests and documentation
 
 ## Do not redo
-- Never commit secrets.
-- Never log tokens, credentials, private keys, recovery secrets or message plaintext.
-- Never allow plaintext production transport.
-- Production exceptions require explicit reason and controlled expiry.
-- Keep production credentials isolated.
+- Only VERIFIED backups may restore.
+- Corrupted or expired backups fail closed.
+- Never back up plaintext private keys.
+- Never include message plaintext in recovery artifacts.
+- Production recovery must be tested.
 
 ## Next action
-Begin Phase 31 — Disaster Recovery.
+Begin Phase 32 — Admin Console.
