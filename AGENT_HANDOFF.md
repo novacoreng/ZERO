@@ -1,29 +1,31 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 33 — Audit & Security Logging.
+Phase 34 — Accessibility & Localization.
 
 ## Status
 LOCKED
 
 ## Completed
-- Security audit domains
-- Immutable/tamper-evident event model
-- Correlation IDs
-- Monotonic sequences
-- Previous/event digests
-- Retention classes
-- Sensitive-data exclusions
-- Critical alerting boundary
-- Migration 032
+- WCAG 2.2 AA-oriented accessibility foundation
+- Keyboard/focus requirements
+- Screen-reader semantics
+- Reduced motion
+- Text scaling
+- High contrast
+- Localization architecture
+- Nigerian/English locale foundation
+- RTL-ready direction model
+- Translation privacy boundary
+- Migration 033
 - Contract tests and documentation
 
 ## Do not redo
-- Keep security audit separate from ordinary logs.
-- Never log message plaintext, private keys, tokens or recovery secrets.
-- Every security event requires correlation context and retention classification.
-- Preserve tamper-evident sequencing.
-- Critical alerts must preserve privacy exclusions.
+- Security-critical UI must remain accessible.
+- Never send private message content to translation services.
+- Preserve locale fallback behavior.
+- Keep RTL support architecture-ready.
+- Honor reduced-motion and text-scaling preferences.
 
 ## Next action
-Begin Phase 34 — Accessibility & Localization.
+Begin Phase 35 — Web Client.
