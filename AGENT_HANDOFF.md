@@ -1,24 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 35 — Web Client.
+Phase 36 — Security Testing.
 
 ## Status
 LOCKED
 
 ## Completed
-- Next.js web application foundation
-- ZERO privacy-first landing/onboarding surface
-- Authentication method entry
-- Responsive UI
-- Accessibility/reduced-motion foundation
-- Web-client documentation
+- Security test-domain model
+- Release-gate model
+- Secret/dependency/SAST/DAST requirements
+- Auth/authz testing requirements
+- Crypto/E2EE boundary testing
+- File/upload testing
+- Web/API security testing
+- Privacy-leak testing
+- Abuse-control testing
+- Migration 034
+- Contract tests and documentation
 
 ## Do not redo
-- Never put private keys or secrets in the web client.
-- Do not fake authentication or E2EE provider behavior.
-- Preserve keyboard accessibility and reduced-motion support.
-- Production security integrations remain explicit.
+- Unresolved CRITICAL findings block release.
+- Never claim a security pass without evidence.
+- E2EE plaintext/private-key leakage tests are mandatory.
+- Keep security scanning in the release path.
 
 ## Next action
-Begin Phase 36 — Security Testing.
+Begin Phase 37 — Load & Reliability.
