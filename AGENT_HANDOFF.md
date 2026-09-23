@@ -1,28 +1,31 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 42 — Public Security Launch.
+Phase 43 — Production Launch.
 
 ## Status
-LOCKED
+LOCKED — final production-launch evidence contract established; real-world launch evidence is not complete.
 
 ## Completed
-- Public security architecture and whitepaper
-- Coordinated vulnerability disclosure policy
-- Security advisory lifecycle
-- Transparency evidence model
-- Public-claim evidence gate
-- Migration 040
+- Final production launch evidence contract
+- Immutable release/artifact identity requirements
+- Independent security evidence gate
+- Production cloud/runtime evidence gate
+- Browser/device and load evidence gate
+- Disaster recovery and backup/rollback gate
+- Privacy/legal/accessibility gate
+- Operations, incident response and monitoring gate
+- Migration 041
 - Contract tests and documentation
 - ZERO brand identity locked in `brand/`
 - Cryptographic shredder design locked in `docs/CRYPTOGRAPHIC-SHREDDER-DESIGN.md`
 
 ## Do not redo
-- Do not claim independent cryptographic audit completion.
-- Do not claim external penetration-test completion.
-- Do not claim production readiness or certification without evidence.
-- Do not publish sensitive infrastructure details or user content.
-- Do not expose private keys, recovery secrets, tokens, or private conversations in security reports.
+- Do not claim ZERO is production-ready because the launch contract exists.
+- Do not bypass missing evidence.
+- Do not claim the independent cryptographic audit or external penetration test has occurred without retained reports.
+- Do not deploy production until every launch gate is independently verified.
+- Do not expose plaintext messages, files, calls, private keys or recovery secrets for launch verification.
 
-## Next action
-Begin Phase 43 — Production Launch.
+## Post-roadmap action
+Collect evidence, execute real assessments, remediate findings, run release-candidate validation, and only then make a production deployment decision.
