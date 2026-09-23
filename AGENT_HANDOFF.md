@@ -1,31 +1,28 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 24 — Reporting.
+Phase 25 — Security Center.
 
 ## Status
 LOCKED
 
 ## Completed
-- Report categories
-- Privacy-preserving report submission
-- Explicit encrypted evidence
-- Least-privilege moderation boundary
-- Reporter privacy
-- Report lifecycle
-- Appeals
-- False-report abuse boundary
-- Retention policy
-- Emergency security reporting
-- Migration 023
+- Security event model
+- Security severity
+- Device/session security visibility
+- Identity-key change warnings
+- Session revocation boundary
+- Security checks
+- Recovery security boundary
+- Migration 024
 - Contract tests and documentation
 
 ## Do not redo
-- Never grant reports universal message decryption.
-- Never expose reporter identity unnecessarily.
-- Never store submitted evidence as plaintext.
-- Never treat a single report as proof of wrongdoing.
-- Never retain evidence indefinitely without policy/legal justification.
+- Never expose private keys through Security Center.
+- Never present unavailable security checks as PASS.
+- Never allow revoked devices to authenticate.
+- Never treat identity-key changes as ordinary activity.
+- Never make session revocation merely cosmetic.
 
 ## Next action
-Begin Phase 25 — Security Center.
+Begin Phase 26 — Backup & Recovery.
