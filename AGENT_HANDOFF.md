@@ -1,26 +1,26 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 8 — Message Expiration.
+Phase 9 — Cryptographic Destruction.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Expiration policy
-- Authoritative expiry timestamps
-- Durable expiration state machine
-- FOR_ME and FOR_EVERYONE semantics
-- Offline reconciliation contract
-- Database migration 007
+- Destruction lifecycle
+- Message/file/local-cache destruction target contracts
+- Terminal/idempotent state transitions
+- Key-version lifecycle metadata
+- Destruction evidence boundary
+- Database migration 008
 - Contract tests and documentation
 
 ## Do not redo
-- Do not use client clocks as authoritative server expiration.
-- Do not claim FOR_ME deletes remote copies.
-- Do not skip durable state transitions.
-- Do not store plaintext to evaluate expiration.
-- Do not implement cryptographic destruction here; that is Phase 9.
+- Do not store secret key material on the server.
+- Do not claim storage deletion alone is cryptographic destruction.
+- Do not resurrect DESTROYED records.
+- Do not implement custom cryptography.
+- Do not treat digest evidence as recoverable key material.
 
 ## Next action
-Begin Phase 9 — Cryptographic Destruction.
+Begin Phase 10 — Universal File Engine.
