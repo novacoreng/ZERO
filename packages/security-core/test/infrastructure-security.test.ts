@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{INFRASTRUCTURE_SECURITY_POLICY,validateControlCode,isProductionEnvironment,canStoreSecretInSource,isSecureTransport}from "../src/infrastructure-security.js";
+test("infrastructure control codes are bounded",()=>{assert.equal(validateControlCode("TLS_REQUIRED"),true);assert.equal(validateControlCode("bad-code"),false)});
+test("production is explicit",()=>{assert.equal(isProductionEnvironment("PRODUCTION"),true);assert.equal(isProductionEnvironment("STAGING"),false)});
+test("secrets cannot be committed",()=>{assert.equal(canStoreSecretInSource(),false);assert.equal(INFRASTRUCTURE_SECURITY_POLICY.secretsInLogs,false);assert.equal(INFRASTRUCTURE_SECURITY_POLICY.productionSecretsSeparate,true)});
+test("secure transport is required",()=>{assert.equal(isSecureTransport("https"),true);assert.equal(isSecureTransport("wss"),true);assert.equal(isSecureTransport("http"),false);assert.equal(INFRASTRUCTURE_SECURITY_POLICY.tlsRequired,true)});
