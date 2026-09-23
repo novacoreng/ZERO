@@ -1,27 +1,26 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 12 — Large File / Resumable Upload.
+Phase 13 — Data Drops.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Resumable encrypted upload session
-- Chunk bounds and metadata
-- Chunk idempotency
-- Integrity metadata
-- Upload state machine
-- Resume/recovery contract
-- Migration 011
+- Temporary encrypted sharing container
+- Access modes
+- Expiration and revocation
+- Download policies
+- Authorization digest boundary
+- Migration 012
 - Contract tests and documentation
 
 ## Do not redo
-- Do not upload plaintext chunks.
-- Do not accept conflicting metadata for an existing chunk index.
-- Do not mark an upload AVAILABLE before finalization.
-- Do not reuse an AEAD nonce with the same object key.
-- Do not claim runtime object-storage integration is complete.
+- Do not put encryption keys in drop links.
+- Do not store link/passcode plaintext.
+- Do not allow expired/revoked drops to authorize new access.
+- Do not increment download counts non-atomically.
+- Do not bypass rate limits or abuse controls.
 
 ## Next action
-Begin Phase 13 — Data Drops.
+Begin Phase 14 — Data Drop Security.
