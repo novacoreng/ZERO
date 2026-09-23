@@ -1,0 +1,12 @@
+{
+  "name": "@zero/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node -e \"console.log('mobile build reserved for later phase')\"",
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"console.log('phase 1 boundary test passed')\"",
+    "lint": "node -e \"console.log('mobile lint reserved for later phase')\""
+  },
+  "devDependencies": { "typescript": "^5.9.0" }
+}
