@@ -1,27 +1,27 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 27 — ZERO Business.
+Phase 28 — Calls.
 
 ## Status
 LOCKED
 
 ## Completed
-- Business organization model
-- Verification lifecycle
-- Business roles
-- Security-admin separation
-- Business policy boundary
-- E2EE privacy boundary
-- Migration 026
+- 1-to-1 audio/video call model
+- Encrypted media boundary
+- Device/session authorization
+- Call lifecycle and expiry
+- Reconnection state
+- Minimal call metadata
+- Migration 027
 - Contract tests and documentation
 
 ## Do not redo
-- Business administrators never receive message plaintext or private keys.
-- E2EE must remain unchanged for Business.
-- Auditor access is read-only.
-- Security privileges must remain role-separated.
-- Verification evidence must be minimized.
+- Never store call media on the server.
+- Never store call keys plaintext server-side.
+- Revoked devices cannot call.
+- Expired call offers fail closed.
+- Terminal calls cannot restart.
 
 ## Next action
-Begin Phase 28 — Calls.
+Begin Phase 29 — Privacy-Preserving Analytics.
