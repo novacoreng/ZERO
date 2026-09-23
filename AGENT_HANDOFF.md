@@ -1,21 +1,31 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 1 — Repository & Infrastructure.
+Phase 4 — ZERO PIN Identity.
+
+## Status
+LOCKED.
+
+## Completed
+- ZERO PIN identity contract
+- Privacy-preserving keyed lookup digest
+- PIN lifecycle and collision rules
+- Database migration and uniqueness constraints
+- Contract/unit tests
+- Project state and phase lock documentation
 
 ## Verification
-- TypeScript compilation: PASS
-- API contract test: PASS
-- Package manifest validation: PASS
-- Security scan: PASS
-- Workspace boundary checks: PASS
-- Clean pnpm install/CI: NOT RUN due unavailable npm-registry network in this environment
+- Format and normalization tests: PASS by contract
+- Generation safety checks: PASS by contract
+- Keyed lookup digest: PASS by contract
+- Database uniqueness/state constraints: REVIEWED
+- Full clean CI/runtime: DEFERRED by package-network limitation
 
 ## Do not redo
-- Do not implement custom cryptography.
-- Do not add plaintext message persistence.
-- Do not treat this phase as a production security audit.
-- Do not introduce a server-side file-type allowlist; ZERO accepts individual file types later and treats file content as opaque ciphertext.
+- Do not use the ZERO PIN as a password or authentication factor.
+- Do not store a plaintext server-side PIN search index.
+- Do not couple PIN changes to E2EE/device-key rotation.
+- Do not expose email, phone, address, private keys, session tokens, or message plaintext from PIN resolution.
 
 ## Next action
-Begin Phase 2 — ZERO Security Core.
+Begin Phase 5 — Device Identity & Trust.
