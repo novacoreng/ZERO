@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import{TEMP_CONVERSATION_POLICY,validateConversationId,validateTtlSeconds,canSend,nextTemporaryConversationState}from "../src/temporary-conversation.js";
+test("validates temporary conversation ids",()=>{assert.equal(validateConversationId("conv_12345678901234"),true);assert.equal(validateConversationId("bad"),false)});
+test("bounds temporary conversation ttl",()=>{assert.equal(validateTtlSeconds(600),true);assert.equal(validateTtlSeconds(604800),true);assert.equal(validateTtlSeconds(599),false);assert.equal(validateTtlSeconds(604801),false)});
+test("expired conversations reject sends",()=>{const now=new Date("2026-09-23T00:00:00Z");assert.equal(canSend("ACTIVE",now,new Date("2026-09-23T00:01:00Z")),true);assert.equal(canSend("ACTIVE",now,new Date("2026-09-22T23:59:00Z")),false)});
+test("expiry reaches cryptographic destruction",()=>{assert.equal(nextTemporaryConversationState("ACTIVE","EXPIRE"),"EXPIRING");assert.equal(nextTemporaryConversationState("EXPIRING","DESTROY_START"),"DESTROYING");assert.equal(nextTemporaryConversationState("DESTROYING","DESTROY"),"DESTROYED")});
+test("revocation is terminal for new sends",()=>{assert.equal(nextTemporaryConversationState("ACTIVE","REVOKE"),"REVOKED");assert.equal(TEMP_CONVERSATION_POLICY.revocationBlocksNewMessages,true)});
