@@ -1,28 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 18 — Temporary Conversations.
+Phase 19 — Privacy Controls.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Temporary conversation lifecycle
-- Bounded TTL presets/custom policy
-- Server-authoritative expiration
-- Device-scoped membership
-- Revocation boundary
-- Offline reconciliation
-- Cryptographic destruction coordination
-- Migration 017
+- Read receipt controls
+- Typing indicator controls
+- Presence/last-seen controls
+- Forwarding policy
+- Notification privacy
+- Screenshot/capture protection boundary
+- Link preview control
+- Profile discovery control
+- Migration 018
 - Contract tests and documentation
 
 ## Do not redo
-- Never weaken E2EE for temporary conversations.
-- Never treat a local timer as authoritative deletion evidence.
-- Never restore expired conversation keys through account recovery.
-- Never allow revoked devices to receive new conversation key material.
-- Never mark destruction complete without key invalidation.
+- Never treat a UI privacy toggle as sufficient enforcement.
+- Never promise screenshot prevention across every platform.
+- Never expose notification plaintext beyond selected policy.
+- Never treat forwarding controls as protection against screenshots or re-sharing.
+- Never enable metadata features without respecting privacy policy.
 
 ## Next action
-Begin Phase 19 — Privacy Controls.
+Begin Phase 20 — ZERO Lock & Local Privacy.
