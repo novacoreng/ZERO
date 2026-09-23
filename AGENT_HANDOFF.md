@@ -1,33 +1,33 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 5 — Device Identity & Trust.
+Phase 6 — 1-to-1 E2EE.
 
 ## Status
 LOCKED.
 
 ## Completed
-- Per-device identity contract
-- Device trust and revocation lifecycle
-- Public-key registration boundary
-- QR pairing security boundary
-- Device migration and contract tests
-- Project state and phase lock documentation
+- 1-to-1 E2EE protocol boundary
+- PQXDH/Double Ratchet/Sesame integration contract
+- Ciphertext-only server envelope
+- Prekey inventory and session migrations
+- E2EE contract tests
+- Phase lock and project-state documentation
 
 ## Verification
-- Device platform validation: PASS by contract
-- Device identifier validation: PASS by contract
-- Public-key material bounds: PASS by contract
-- Private-key boundary: PASS by contract
-- Database lifecycle constraints: REVIEWED
-- Full clean CI/runtime: DEFERRED by package-network limitation
+- E2EE profile validation: PASS by contract
+- Ciphertext-only envelope: PASS by contract
+- Session/device separation: REVIEWED
+- Prekey lifecycle schema: REVIEWED
+- Identity-change verification rule: PASS by policy
+- Full clean CI/runtime and production crypto interoperability: DEFERRED
 
 ## Do not redo
 - Do not implement custom cryptographic primitives.
-- Do not store device private keys server-side.
-- Do not treat the ZERO PIN or account ID as a cryptographic device identity.
-- Do not silently trust remote identity-key changes.
-- Do not put credentials, session tokens, private keys, or message plaintext into QR pairing payloads.
+- Do not store plaintext messages on the server.
+- Do not upload device private keys.
+- Do not silently accept remote identity-key changes.
+- Do not claim production E2EE until the approved provider, runtime interoperability, and independent review are complete.
 
 ## Next action
-Begin Phase 6 — 1-to-1 E2EE.
+Begin Phase 7 — Secure Messaging Engine.
