@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{normalizeSecureUrl,classifyLink,canPreviewLink}from "../src/secure-link.js";
+test("normalizes tracking parameters and removes fragments",()=>{assert.equal(normalizeSecureUrl("https://example.com/a?utm_source=x&ok=1#secret"),"https://example.com/a?ok=1")});
+test("rejects unsafe protocols and local hosts",()=>{assert.throws(()=>normalizeSecureUrl("javascript:alert(1)"));assert.throws(()=>normalizeSecureUrl("https://localhost/x"))});
+test("classifies supported links",()=>{assert.equal(classifyLink("https://example.com"),"HTTPS");assert.equal(classifyLink("mailto:a@example.com"),"MAILTO")});
+test("previews require explicit allowance and safe state",()=>{const now=new Date("2026-09-23T00:00:00Z");const r={id:"l",normalizedUrl:"https://example.com",kind:"HTTPS" as const,state:"SAFE" as const,previewAllowed:true,createdAt:"2026-09-23T00:00:00Z"};assert.equal(canPreviewLink(r,now),true);assert.equal(canPreviewLink({...r,state:"UNREVIEWED"},now),false)});
