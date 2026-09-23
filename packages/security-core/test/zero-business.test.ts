@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import{ZERO_BUSINESS_POLICY,validateBusinessId,validateOrganizationName,canManageSecurity,isReadOnly,canDecryptUserMessages}from "../src/zero-business.js";
+test("business identifiers and names validate",()=>{assert.equal(validateBusinessId("biz_12345678901234"),true);assert.equal(validateBusinessId("x"),false);assert.equal(validateOrganizationName("ZERO Limited"),true);assert.equal(validateOrganizationName(" "),false)});
+test("security roles are separated",()=>{assert.equal(canManageSecurity("OWNER"),true);assert.equal(canManageSecurity("SECURITY_ADMIN"),true);assert.equal(canManageSecurity("MEMBER"),false);assert.equal(isReadOnly("AUDITOR"),true)});
+test("business cannot decrypt user messages",()=>{assert.equal(canDecryptUserMessages(),false);assert.equal(ZERO_BUSINESS_POLICY.e2eeUnchanged,true);assert.equal(ZERO_BUSINESS_POLICY.serverPlaintextAccess,false)});
