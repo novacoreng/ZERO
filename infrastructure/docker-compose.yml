@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: zero
+      POSTGRES_USER: zero
+      POSTGRES_PASSWORD: zero_local_only
+    ports:
+      - "54329:5432"
+    volumes:
+      - zero_postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8
+    ports:
+      - "63799:6379"
+
+volumes:
+  zero_postgres:
