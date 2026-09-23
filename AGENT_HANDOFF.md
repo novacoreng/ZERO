@@ -1,26 +1,27 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 11 — Universal File Encryption.
+Phase 12 — Large File / Resumable Upload.
 
 ## Status
 LOCKED.
 
 ## Completed
-- zero.file.v1 encryption boundary
-- Per-object key model
-- AEAD envelope contract
-- Associated-data binding
-- Integrity validation
-- Migration 010
+- Resumable encrypted upload session
+- Chunk bounds and metadata
+- Chunk idempotency
+- Integrity metadata
+- Upload state machine
+- Resume/recovery contract
+- Migration 011
 - Contract tests and documentation
 
 ## Do not redo
-- Do not store file keys on the server.
-- Do not implement custom cryptography.
-- Do not reuse AEAD nonces with the same key.
-- Do not upload plaintext file chunks.
-- Do not implement resumable transport before Phase 12.
+- Do not upload plaintext chunks.
+- Do not accept conflicting metadata for an existing chunk index.
+- Do not mark an upload AVAILABLE before finalization.
+- Do not reuse an AEAD nonce with the same object key.
+- Do not claim runtime object-storage integration is complete.
 
 ## Next action
-Begin Phase 12 — Large File / Resumable Upload.
+Begin Phase 13 — Data Drops.
