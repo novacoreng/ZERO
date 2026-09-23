@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{SECURITY_AUDIT_POLICY,validateAuditId,validateCorrelationId,validateSequence,validateDigest,isSecurityDomain}from "../src/security-audit-log.js";
+test("audit identifiers validate",()=>{assert.equal(validateAuditId("audit_12345678901234"),true);assert.equal(validateCorrelationId("corr_12345678901234"),true);assert.equal(validateSequence(0),true);assert.equal(validateSequence(-1),false)});
+test("audit digests are fixed length",()=>{assert.equal(validateDigest(new Uint8Array(32)),true);assert.equal(validateDigest(new Uint8Array(31)),false)});
+test("security domains are explicit",()=>{assert.equal(isSecurityDomain("AUTH"),true);assert.equal(isSecurityDomain("ADMIN"),true);assert.equal(isSecurityDomain("CHAT"),false)});
+test("audit trail excludes sensitive content",()=>{assert.equal(SECURITY_AUDIT_POLICY.immutable,true);assert.equal(SECURITY_AUDIT_POLICY.tamperEvidenceRequired,true);assert.equal(SECURITY_AUDIT_POLICY.rawMessageContent,false);assert.equal(SECURITY_AUDIT_POLICY.privateKeysExcluded,true);assert.equal(SECURITY_AUDIT_POLICY.tokensExcluded,true)});
