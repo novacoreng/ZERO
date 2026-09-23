@@ -1,0 +1,14 @@
+{
+  "name": "zero-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "security:check": "node scripts/security-check.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
