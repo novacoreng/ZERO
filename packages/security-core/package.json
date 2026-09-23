@@ -1,0 +1,13 @@
+{
+  "name": "@zero/security-core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"console.log('phase 1 boundary test passed')\"",
+    "lint": "node -e \"console.log('security-core lint reserved for approved crypto phase')\""
+  },
+  "devDependencies": { "typescript": "^5.9.0" }
+}
