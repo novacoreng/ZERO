@@ -1,8 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 18 — Temporary Conversations
-- Status: LOCKED — temporary conversation lifecycle, bounded TTL, server-authoritative expiry, device-scoped membership, revocation, offline reconciliation, cryptographic destruction coordination, migration, tests and documentation completed.
-- Security posture: Phases 2-18 boundaries locked; production expiration workers, E2EE runtime integration, production crypto integration and independent security review remain required.
-- Verification: E2EE preservation, authoritative expiration, offline reconciliation, revocation and destruction coordination reviewed.
+- Current phase: Phase 19 — Privacy Controls
+- Status: LOCKED — read receipts, typing indicators, presence/last-seen, forwarding, notification privacy, screenshot/capture boundary, link previews, profile discovery, migration, tests and documentation completed.
+- Security posture: Phases 2-19 boundaries locked; platform capture protection, notification providers, multi-device synchronization, production crypto integration and independent privacy/security review remain required.
+- Verification: privacy-control enforcement contracts, reduced-exposure defaults, notification minimization and capability-based screenshot protection reviewed.
 - External limitation: full clean CI/runtime remains dependent on restoring package installation/network access in the build environment.
-- Next phase: Phase 19 — Privacy Controls
+- Next phase: Phase 20 — ZERO Lock & Local Privacy
