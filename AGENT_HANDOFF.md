@@ -1,28 +1,28 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 21 — Offline & Nigerian Low-Bandwidth.
+Phase 22 — Notifications.
 
 ## Status
 LOCKED
 
 ## Completed
-- Encrypted offline outbox
-- Queue state machine
-- Bounded retry/backoff
-- Connection classification
-- Low-bandwidth scheduling policy
-- Interrupted transfer recovery boundary
-- Expiration reconciliation
-- Migration 020
+- Privacy-preserving notification model
+- Device-scoped push token boundary
+- Opaque notification payload
+- Notification privacy modes
+- Notification lifecycle
+- Expiration/revocation
+- Provider boundary
+- Migration 021
 - Contract tests and documentation
 
 ## Do not redo
-- Never store plaintext messages in the offline queue.
-- Never let retries create duplicate messages.
-- Never let local offline state override authoritative expiration.
-- Never treat network quality classification as a security decision.
-- Never restart an interrupted encrypted file transfer unnecessarily.
+- Never use push notifications as a plaintext messaging channel.
+- Never put encryption keys in provider payloads.
+- Never put signed URLs or sensitive link parameters in notifications.
+- Never deliver expired/revoked notifications.
+- Never treat provider tokens as user identity.
 
 ## Next action
-Begin Phase 22 — Notifications.
+Begin Phase 23 — Abuse, Spam & Fraud.
