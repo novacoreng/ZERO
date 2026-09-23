@@ -1,29 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 19 — Privacy Controls.
+Phase 20 — ZERO Lock & Local Privacy.
 
 ## Status
-LOCKED.
+LOCKED
 
 ## Completed
-- Read receipt controls
-- Typing indicator controls
-- Presence/last-seen controls
-- Forwarding policy
-- Notification privacy
-- Screenshot/capture protection boundary
-- Link preview control
-- Profile discovery control
-- Migration 018
+- Local lock policy
+- Biometric/passcode/PIN boundary
+- Secure storage requirements
+- Auto-lock policy
+- Background privacy
+- Clipboard protection
+- Panic lock/destruction boundary
+- Capture protection boundary
+- Migration 019
 - Contract tests and documentation
 
 ## Do not redo
-- Never treat a UI privacy toggle as sufficient enforcement.
-- Never promise screenshot prevention across every platform.
-- Never expose notification plaintext beyond selected policy.
-- Never treat forwarding controls as protection against screenshots or re-sharing.
-- Never enable metadata features without respecting privacy policy.
+- Never store biometric templates.
+- Never place private keys in ordinary preferences or logs.
+- Never claim panic is guaranteed forensic wiping.
+- Never display message plaintext while locked.
+- Never treat local lock as account recovery.
 
 ## Next action
-Begin Phase 20 — ZERO Lock & Local Privacy.
+Begin Phase 21 — Offline & Nigerian Low-Bandwidth.
