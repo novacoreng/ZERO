@@ -1,31 +1,24 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 34 — Accessibility & Localization.
+Phase 35 — Web Client.
 
 ## Status
 LOCKED
 
 ## Completed
-- WCAG 2.2 AA-oriented accessibility foundation
-- Keyboard/focus requirements
-- Screen-reader semantics
-- Reduced motion
-- Text scaling
-- High contrast
-- Localization architecture
-- Nigerian/English locale foundation
-- RTL-ready direction model
-- Translation privacy boundary
-- Migration 033
-- Contract tests and documentation
+- Next.js web application foundation
+- ZERO privacy-first landing/onboarding surface
+- Authentication method entry
+- Responsive UI
+- Accessibility/reduced-motion foundation
+- Web-client documentation
 
 ## Do not redo
-- Security-critical UI must remain accessible.
-- Never send private message content to translation services.
-- Preserve locale fallback behavior.
-- Keep RTL support architecture-ready.
-- Honor reduced-motion and text-scaling preferences.
+- Never put private keys or secrets in the web client.
+- Do not fake authentication or E2EE provider behavior.
+- Preserve keyboard accessibility and reduced-motion support.
+- Production security integrations remain explicit.
 
 ## Next action
-Begin Phase 35 — Web Client.
+Begin Phase 36 — Security Testing.
