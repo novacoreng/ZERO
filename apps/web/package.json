@@ -1,12 +1,1 @@
-{
-  "name": "@zero/web",
-  "private": true,
-  "version": "0.1.0",
-  "scripts": {
-    "build": "node -e \"console.log('web build reserved for later phase')\"",
-    "typecheck": "tsc --noEmit",
-    "test": "node -e \"console.log('phase 1 boundary test passed')\"",
-    "lint": "node -e \"console.log('web lint reserved for later phase')\""
-  },
-  "devDependencies": { "typescript": "^5.9.0" }
-}
+{"name":"@zero/web","private":true,"version":"0.1.0","scripts":{"dev":"next dev","build":"next build","start":"next start","typecheck":"tsc --noEmit"},"dependencies":{"next":"^16.0.0","react":"^19.2.0","react-dom":"^19.2.0"}}
