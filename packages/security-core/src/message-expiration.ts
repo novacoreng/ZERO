@@ -1,10 +1,83 @@
 export type ExpirationPolicy = "10_SECONDS" | "1_MINUTE" | "10_MINUTES" | "1_HOUR" | "6_HOURS" | "24_HOURS" | "3_DAYS" | "7_DAYS" | "CUSTOM";
 export type ExpirationState = "ACTIVE" | "EXPIRING" | "DESTROYING" | "DESTROYED";
 export type ExpirationScope = "FOR_EVERYONE" | "FOR_ME";
-export type ExpirationRecord = { messageId:string; scope:ExpirationScope; state:ExpirationState; expiresAt:string; startedDestroyingAt?:string; destroyedAt?:string; };
-export const EXPIRATION_POLICY=Object.freeze({clockAuthority:"server",plaintextRequired:false,states:["ACTIVE","EXPIRING","DESTROYING","DESTROYED"] as const,terminalState:"DESTROYED",offlineClientMustReconcile:true,expirationIsNotDeletionReceipt:true});
-export const EXPIRATION_SECONDS:Readonly<Record<Exclude<ExpirationPolicy,"CUSTOM">,number>>={10_SECONDS:10,1_MINUTE:60,10_MINUTES:600,1_HOUR:3600,6_HOURS:21600,24_HOURS:86400,3_DAYS:259200,7_DAYS:604800};
-export function computeExpiresAt(createdAt:Date, policy:ExpirationPolicy, customSeconds?:number):Date { const seconds=policy==="CUSTOM"?customSeconds??0:EXPIRATION_SECONDS[policy]; if(!Number.isInteger(seconds)||seconds<=0) throw new Error("Invalid expiration duration"); return new Date(createdAt.getTime()+seconds*1000); }
-export function isExpired(now:Date, expiresAt:Date):boolean{return now.getTime()>=expiresAt.getTime();}
-export function nextExpirationState(state:ExpirationState, now:Date, expiresAt:Date):ExpirationState { if(state==="DESTROYED") return state; if(state==="ACTIVE" && isExpired(now,expiresAt)) return "EXPIRING"; if(state==="EXPIRING") return "DESTROYING"; if(state==="DESTROYING") return "DESTROYED"; return state; }
-export function assertValidExpirationTransition(from:ExpirationState,to:ExpirationState):void { const allowed:Record<ExpirationState,readonly ExpirationState[]>={ACTIVE:["ACTIVE","EXPIRING"],EXPIRING:["EXPIRING","DESTROYING"],DESTROYING:["DESTROYING","DESTROYED"],DESTROYED:["DESTROYED"]}; if(!allowed[from].includes(to)) throw new Error("Invalid expiration state transition"); }
+export type ExpirationRecord = {
+  messageId: string;
+  scope: ExpirationScope;
+  state: ExpirationState;
+  expiresAt: string;
+  startedDestroyingAt?: string;
+  destroyedAt?: string;
+};
+
+export const EXPIRATION_POLICY = Object.freeze({
+  clockAuthority: "server",
+  plaintextRequired: false,
+  states: ["ACTIVE", "EXPIRING", "DESTROYING", "DESTROYED"] as const,
+  terminalState: "DESTROYED",
+  offlineClientMustReconcile: true,
+  expirationIsNotDeletionReceipt: true,
+});
+
+export const EXPIRATION_SECONDS: Readonly<
+  Record<Exclude<ExpirationPolicy, "CUSTOM">, number>
+> = {
+  "10_SECONDS": 10,
+  "1_MINUTE": 60,
+  "10_MINUTES": 600,
+  "1_HOUR": 3600,
+  "6_HOURS": 21600,
+  "24_HOURS": 86400,
+  "3_DAYS": 259200,
+  "7_DAYS": 604800,
+};
+
+export function computeExpiresAt(
+  createdAt: Date,
+  policy: ExpirationPolicy,
+  customSeconds?: number,
+): Date {
+  const seconds =
+    policy === "CUSTOM" ? (customSeconds ?? 0) : EXPIRATION_SECONDS[policy];
+
+  if (!Number.isInteger(seconds) || seconds <= 0) {
+    throw new Error("Invalid expiration duration");
+  }
+
+  return new Date(createdAt.getTime() + seconds * 1000);
+}
+
+export function isExpired(now: Date, expiresAt: Date): boolean {
+  return now.getTime() >= expiresAt.getTime();
+}
+
+export function nextExpirationState(
+  state: ExpirationState,
+  now: Date,
+  expiresAt: Date,
+): ExpirationState {
+  if (state === "DESTROYED") return state;
+  if (state === "ACTIVE" && isExpired(now, expiresAt)) return "EXPIRING";
+  if (state === "EXPIRING") return "DESTROYING";
+  if (state === "DESTROYING") return "DESTROYED";
+  return state;
+}
+
+export function assertValidExpirationTransition(
+  from: ExpirationState,
+  to: ExpirationState,
+): void {
+  const allowed: Record<
+    ExpirationState,
+    readonly ExpirationState[]
+  > = {
+    ACTIVE: ["ACTIVE", "EXPIRING"],
+    EXPIRING: ["EXPIRING", "DESTROYING"],
+    DESTROYING: ["DESTROYING", "DESTROYED"],
+    DESTROYED: ["DESTROYED"],
+  };
+
+  if (!allowed[from].includes(to)) {
+    throw new Error("Invalid expiration state transition");
+  }
+}
