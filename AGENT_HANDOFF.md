@@ -1,27 +1,29 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 14 — Data Drop Security.
+Phase 15 — Secure Media & Metadata.
 
 ## Status
 LOCKED.
 
 ## Completed
-- High-entropy authorization
-- Replay/use-limit state
-- Recipient binding digest
-- Rate-limit/abuse-control boundary
-- Object-storage authorization boundary
-- Privacy-preserving access events
-- Migration 013
+- Media trust boundary
+- Filename sanitization
+- MIME distrust boundary
+- EXIF/GPS/device metadata removal policy
+- Sanitization lifecycle
+- Derivative isolation
+- Thumbnail/preview policy
+- Quarantine boundary
+- Migration 014
 - Contract tests and documentation
 
 ## Do not redo
-- Never store authorization secrets or encryption keys in plaintext.
-- Never allow one-time authorization replay.
-- Never issue object access before application authorization.
-- Never log signed URLs, secrets, passcodes or encryption keys.
-- Never let concurrent downloads bypass configured limits.
+- Never trust client MIME as authoritative.
+- Never interpret uploaded filenames as paths.
+- Never expose GPS/device metadata by default.
+- Never generate derivatives from unsanitized media.
+- Never execute untrusted media.
 
 ## Next action
-Begin Phase 15 — Secure Media & Metadata.
+Begin Phase 16 — Secure Link Handling.
