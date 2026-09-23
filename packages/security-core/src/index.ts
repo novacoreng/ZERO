@@ -14,3 +14,5 @@ export * from "./independent-audit.js";
 export * from "./beta.js";
 
 export * from "./production-hardening.js";
+
+export * from "./public-security-launch.js";
