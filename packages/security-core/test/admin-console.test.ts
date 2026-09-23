@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{ADMIN_CONSOLE_POLICY,validateAdminId,isAllowedAdminAction,isReadOnlyAdmin,canAccessPlaintext}from "../src/admin-console.js";
+test("admin identifiers validate",()=>{assert.equal(validateAdminId("admin_12345678901234"),true);assert.equal(validateAdminId("x"),false)});
+test("roles are least privilege",()=>{assert.equal(isAllowedAdminAction("SECURITY_ADMIN","REVOKE_DEVICE"),true);assert.equal(isAllowedAdminAction("SUPPORT_ADMIN","SUSPEND_ACCOUNT"),false);assert.equal(isAllowedAdminAction("TRUST_SAFETY_ADMIN","REVIEW_REPORT"),true)});
+test("auditor is read-only",()=>{assert.equal(isReadOnlyAdmin("AUDITOR"),true);assert.equal(isAllowedAdminAction("AUDITOR","REVOKE_DEVICE"),false)});
+test("admins never access plaintext",()=>{assert.equal(canAccessPlaintext(),false);assert.equal(ADMIN_CONSOLE_POLICY.e2eePlaintextAccess,false);assert.equal(ADMIN_CONSOLE_POLICY.privateKeyAccess,false);assert.equal(ADMIN_CONSOLE_POLICY.recoverySecretAccess,false)});
