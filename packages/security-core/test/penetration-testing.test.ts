@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import{PENTEST_POLICY,isPentestDomain,isBlockingPentestFinding,canReleaseAfterPentest,requiresRetest,validatePentestId}from "../src/penetration-testing.js";
+const finding={id:"pt_12345678901234",domain:"AUTHZ" as const,severity:"CRITICAL" as const,resolved:false,retired:false};
+test("pentest domains and identifiers are explicit",()=>{assert.equal(isPentestDomain("E2EE"),true);assert.equal(isPentestDomain("UNKNOWN"),false);assert.equal(validatePentestId(finding.id),true);assert.equal(validatePentestId("x"),false)});
+test("unresolved active critical findings block release",()=>{assert.equal(isBlockingPentestFinding(finding),true);assert.equal(canReleaseAfterPentest([finding]),false);assert.equal(canReleaseAfterPentest([{...finding,resolved:true}]),true);assert.equal(canReleaseAfterPentest([{...finding,retired:true}]),true)});
+test("remediation requires retest",()=>{assert.equal(requiresRetest(finding,true),true);assert.equal(requiresRetest({...finding,resolved:true},true),false)});
+test("pentest coverage policy is explicit",()=>{assert.equal(PENTEST_POLICY.externalAssessmentRequired,true);assert.equal(PENTEST_POLICY.authorizationBoundaryRequired,true);assert.equal(PENTEST_POLICY.e2eePlaintextLeakageRequired,true);assert.equal(PENTEST_POLICY.adminPrivilegeEscalationRequired,true)});
