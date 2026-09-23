@@ -1,29 +1,28 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 17 — Groups.
+Phase 18 — Temporary Conversations.
 
 ## Status
 LOCKED.
 
 ## Completed
-- MLS RFC 9420 protocol boundary
-- Group lifecycle
+- Temporary conversation lifecycle
+- Bounded TTL presets/custom policy
+- Server-authoritative expiration
 - Device-scoped membership
-- Owner/admin/member roles
-- Membership state
-- Epoch state
-- Membership-change epoch advancement
-- Removed-member key exclusion boundary
-- Migration 016
+- Revocation boundary
+- Offline reconciliation
+- Cryptographic destruction coordination
+- Migration 017
 - Contract tests and documentation
 
 ## Do not redo
-- Never implement custom group cryptography.
-- Never store group secrets on the server.
-- Never send new epoch key material to removed members.
-- Never treat account IDs as cryptographic device identities.
-- Never claim MLS runtime integration before a reviewed provider is selected.
+- Never weaken E2EE for temporary conversations.
+- Never treat a local timer as authoritative deletion evidence.
+- Never restore expired conversation keys through account recovery.
+- Never allow revoked devices to receive new conversation key material.
+- Never mark destruction complete without key invalidation.
 
 ## Next action
-Begin Phase 18 — Temporary Conversations.
+Begin Phase 19 — Privacy Controls.
