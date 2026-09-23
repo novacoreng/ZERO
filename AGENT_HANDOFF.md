@@ -1,28 +1,27 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 25 — Security Center.
+Phase 26 — Backup & Recovery.
 
 ## Status
 LOCKED
 
 ## Completed
-- Security event model
-- Security severity
-- Device/session security visibility
-- Identity-key change warnings
-- Session revocation boundary
-- Security checks
-- Recovery security boundary
-- Migration 024
+- Encrypted backup model
+- Recovery levels
+- Explicit recovery authorization
+- Trusted contacts
+- Session revocation on recovery
+- Backup/recovery lifecycle
+- Migration 025
 - Contract tests and documentation
 
 ## Do not redo
-- Never expose private keys through Security Center.
-- Never present unavailable security checks as PASS.
-- Never allow revoked devices to authenticate.
-- Never treat identity-key changes as ordinary activity.
-- Never make session revocation merely cosmetic.
+- Never store plaintext backup or recovery secrets on the server.
+- Never expose private keys to the server.
+- Trusted contacts do not automatically receive decryption capability.
+- Recovery must invalidate prior sessions.
+- Expired recovery requests must fail closed.
 
 ## Next action
-Begin Phase 26 — Backup & Recovery.
+Begin Phase 27 — ZERO Business.
