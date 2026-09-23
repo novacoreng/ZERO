@@ -130,9 +130,10 @@ export default function Home() {
 
         <div className="panel" aria-live="polite">
           <h2>{mode === "signup" ? "Create your private identity" : "Sign in securely"}</h2>
-          <p>{status}</p>
+          <p id="auth-status" role="status">{status}</p>
 
-          <div className="methods" role="group" aria-label="Authentication method">
+          <form onSubmit={(event) => { event.preventDefault(); handleContinue(); }}>
+            <div className="methods" role="group" aria-label="Authentication method">
             {(["email", "phone", "passkey"] as AuthMethod[]).map((item) => (
               <button
                 type="button"
@@ -148,9 +149,9 @@ export default function Home() {
                     : "Passkey"}
               </button>
             ))}
-          </div>
+            </div>
 
-          {method !== "passkey" && (
+            {method !== "passkey" && (
             <label className="field">
               <span>{method === "email" ? "Email address" : "Phone number"}</span>
               <input
@@ -163,9 +164,10 @@ export default function Home() {
             </label>
           )}
 
-          <button type="button" className="primary" onClick={handleContinue}>
-            Continue
-          </button>
+            <button type="submit" className="primary">
+              Continue
+            </button>
+          </form>
 
           <section className="activity" aria-label="ZERO activity log">
             <div className="activity-header">
