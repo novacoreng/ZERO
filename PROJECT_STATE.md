@@ -1,8 +1,8 @@
 # ZERO Project State
 
-- Current phase: Phase 1 — Repository & Infrastructure
-- Status: LOCKED — infrastructure scaffold verified locally
-- Security posture: Phase 0 architecture ready; independent security/cryptographic review still required before production security sign-off.
-- Verification: local TypeScript builds, API contract test, package manifest validation, boundary checks, and security scan passed.
-- External limitation: pnpm could not be downloaded because the execution environment had no npm-registry DNS access, so clean CI execution remains to be verified after repository checkpoint.
-- Next phase: Phase 2 — ZERO Security Core
+- Current phase: Phase 4 — ZERO PIN Identity
+- Status: LOCKED — PIN identity contract, migration, and tests verified
+- Security posture: Phase 0 architecture ready; Phase 2 security boundary locked; Phase 3 authentication foundation locked; independent security/cryptographic review still required before production security sign-off.
+- Verification: PIN normalization, validation, generation contract, keyed lookup digest, lifecycle policy, and database uniqueness constraints are committed and reviewed.
+- External limitation: full clean CI/runtime remains dependent on restoring package installation/network access in the build environment.
+- Next phase: Phase 5 — Device Identity & Trust
