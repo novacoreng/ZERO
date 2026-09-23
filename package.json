@@ -1,8 +1,17 @@
 {
-  "name":"zero-platform",
-  "private":true,
-  "version":"0.3.0",
-  "type":"module",
-  "scripts":{"typecheck":"tsc --noEmit","test":"node --test","security:check":"node scripts/security-check.mjs"},
-  "devDependencies":{"typescript":"^5.9.0"}
+  "name": "zero-platform",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "security:check": "node scripts/security-check.mjs"
+  },
+  "dependencies": {
+    "next": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
 }
