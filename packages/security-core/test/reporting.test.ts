@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{REPORTING_POLICY,validateReportId,validateCategory,canTransitionReport}from "../src/reporting.js";
+test("validates report ids and categories",()=>{assert.equal(validateReportId("report_12345678901234"),true);assert.equal(validateCategory("SECURITY"),true);assert.equal(validateCategory("NOPE"),false)});
+test("report lifecycle is bounded",()=>{assert.equal(canTransitionReport("SUBMITTED","TRIAGE"),true);assert.equal(canTransitionReport("UNDER_REVIEW","ACTION"),true);assert.equal(canTransitionReport("CLOSED","REVIEW"),false)});
+test("evidence remains encrypted and moderator access is least privilege",()=>{assert.equal(REPORTING_POLICY.evidenceEncryptionRequired,true);assert.equal(REPORTING_POLICY.moderatorLeastPrivilege,true);assert.equal(REPORTING_POLICY.messagePlaintextAutomaticAccess,false)});
+test("appeals are supported",()=>{assert.equal(REPORTING_POLICY.appealAllowed,true);assert.equal(canTransitionReport("ACTIONED","APPEAL"),true)});
