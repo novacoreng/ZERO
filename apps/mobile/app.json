@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "ZERO",
+    "slug": "zero",
+    "version": "0.2.0",
+    "orientation": "default",
+    "scheme": "zero",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "zero",
+          "color": "#76E2D8"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
