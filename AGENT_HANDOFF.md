@@ -1,10 +1,10 @@
 # ZERO Agent Handoff
 
 ## Current task
-Phase 43 — Production Launch.
+Phase 43 — Production Launch / release-candidate hardening.
 
 ## Status
-LOCKED — final production-launch evidence contract established; real-world launch evidence is not complete.
+LOCKED — production-launch evidence contract remains active. The updated Full Stack Production App Builder UI-quality gate is now part of the release-candidate evidence process.
 
 ## Completed
 - Final production launch evidence contract
@@ -19,13 +19,22 @@ LOCKED — final production-launch evidence contract established; real-world lau
 - Contract tests and documentation
 - ZERO brand identity locked in `brand/`
 - Cryptographic shredder design locked in `docs/CRYPTOGRAPHIC-SHREDDER-DESIGN.md`
+- Updated Full Stack Production App Builder UI quality/accessibility audit added at `docs/UI-QUALITY-AUDIT.md`
+
+## New quality workflow
+Apply the current builder workflow as:
+
+`Audit → Build → Test → Verify → Fix → Re-test → UI Quality Gate → Security Gate → Lock`
+
+For every user-facing flow, verify actual behavior rather than visual presence. Every button must have a tested action/state on supported platforms. Responsive evidence must cover compact phones, standard/large phones, tablets, desktop/resizable layouts, orientation, keyboard/insets/safe areas, and applicable foldable/split-screen states.
 
 ## Do not redo
-- Do not claim ZERO is production-ready because the launch contract exists.
+- Do not claim ZERO is production-ready because the launch contract or UI audit exists.
 - Do not bypass missing evidence.
 - Do not claim the independent cryptographic audit or external penetration test has occurred without retained reports.
 - Do not deploy production until every launch gate is independently verified.
 - Do not expose plaintext messages, files, calls, private keys or recovery secrets for launch verification.
+- Do not treat mocked/provider-boundary authentication as real authentication.
 
 ## Post-roadmap action
-Collect evidence, execute real assessments, remediate findings, run release-candidate validation, and only then make a production deployment decision.
+Collect UI/device evidence, execute real security assessments, remediate findings, run release-candidate validation, verify provider integrations and production runtime behavior, and only then make a production deployment decision.
