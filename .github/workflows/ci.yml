@@ -25,5 +25,5 @@ jobs:
       - run: pnpm --dir apps/web build
       - run: pnpm --dir apps/mobile install --no-frozen-lockfile
       - run: pnpm --dir apps/mobile typecheck
-      - run: pnpm --dir apps/mobile expo export --platform web
+      - run: pnpm --dir apps/mobile exec expo export --platform web
       - run: pnpm security:check
