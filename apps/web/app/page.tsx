@@ -1,32 +1,42 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Mode = "signin" | "signup";
 type AuthMethod = "email" | "phone" | "passkey";
-
 type Notice = { title: string; message: string } | null;
-
-const features = [
-  ["E2EE", "Private by design."],
-  ["SHRED", "Messages have an explicit lifecycle."],
-  ["FILES", "Encrypted document workflows are planned for the next integration boundary."],
-  ["ALERTS", "Transient notification UX is ready for testing."],
-];
 
 const methods: AuthMethod[] = ["email", "phone", "passkey"];
 
+const principles = [
+  ["01", "PRIVATE", "Identity stays minimal by default."],
+  ["02", "TEMPORARY", "Messages are designed around explicit lifecycles."],
+  ["03", "CONTROLLED", "Your device and session remain the source of intent."],
+];
+
 function timestamp() {
-  return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(new Date());
 }
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("signup");
   const [method, setMethod] = useState<AuthMethod>("email");
   const [identifier, setIdentifier] = useState("");
-  const [status, setStatus] = useState("Choose an authentication method, then continue.");
+  const [status, setStatus] = useState("Choose how you want to enter ZERO.");
   const [notice, setNotice] = useState<Notice>(null);
-  const [logs, setLogs] = useState<string[]>(["ZERO client loaded.", "Authentication boundary ready."]);
+  const [logs, setLogs] = useState<string[]>([
+    "ZERO client initialized.",
+    "Private authentication boundary ready.",
+  ]);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+  }, []);
 
   function addLog(message: string) {
     const entry = `[${timestamp()}] ${message}`;
@@ -35,29 +45,34 @@ export default function Home() {
   }
 
   function notify(title: string, message: string) {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
     setNotice({ title, message });
-    window.setTimeout(() => setNotice(null), 3400);
+    noticeTimer.current = setTimeout(() => setNotice(null), 3400);
   }
 
   function selectMode(next: Mode) {
     setMode(next);
-    setStatus(next === "signup" ? "Create your private identity." : "Sign in to your ZERO identity.");
+    setStatus(next === "signup" ? "Create a private ZERO identity." : "Continue to your ZERO identity.");
     addLog(`Mode selected: ${next}.`);
   }
 
   function selectMethod(next: AuthMethod) {
     setMethod(next);
-    setStatus(next === "passkey" ? "Passkey selected. Continue to start the passkey boundary." : `Enter your ${next === "email" ? "email address" : "phone number"} to continue.`);
+    setStatus(
+      next === "passkey"
+        ? "Passkey selected. Continue to start the secure provider boundary."
+        : `Enter your ${next === "email" ? "email address" : "phone number"} to continue.`,
+    );
     addLog(`Authentication method selected: ${next}.`);
   }
 
-  function handleContinue(event?: FormEvent) {
-    event?.preventDefault();
+  function handleContinue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
     if (method !== "passkey" && !identifier.trim()) {
       const label = method === "email" ? "email address" : "phone number";
       setStatus(`Enter your ${label} before continuing.`);
-      notify("ZERO needs one more thing", `Enter your ${label} to continue.`);
+      notify("One more detail", `Enter your ${label} to continue.`);
       addLog("Continue blocked: required identifier is empty.");
       return;
     }
@@ -79,72 +94,119 @@ export default function Home() {
     const action = mode === "signup" ? "Sign-up" : "Sign-in";
     const channel = method === "passkey" ? "Passkey" : `${method.toUpperCase()} OTP`;
     setStatus(`${action} test request accepted. ${channel} provider boundary reached.`);
-    notify(`${action} ready`, `${channel} test boundary reached.`);
+    notify(`${action} ready`, `${channel} provider boundary reached.`);
     addLog(`${action} accepted: ${channel} boundary reached.`);
   }
 
   return (
-    <main className="app-shell">
+    <main className="zero-app">
+      <div className="ambient ambient-a" aria-hidden="true" />
+      <div className="ambient ambient-b" aria-hidden="true" />
+
       {notice ? (
-        <div className="island" role="status" aria-live="polite">
-          <span className="island-orb" aria-hidden="true" />
-          <span className="island-copy"><strong>{notice.title}</strong><small>{notice.message}</small></span>
+        <div className="dynamic-island" role="status" aria-live="polite">
+          <span className="island-pulse" aria-hidden="true" />
+          <span className="island-copy">
+            <strong>{notice.title}</strong>
+            <small>{notice.message}</small>
+          </span>
           <button type="button" className="island-close" aria-label="Dismiss notification" onClick={() => setNotice(null)}>×</button>
         </div>
       ) : null}
 
-      <header className="topbar">
-        <div className="brand-lockup"><img src="/zero-mark.svg" alt="" /><span>ZERO</span></div>
-        <span className="environment">TEST ENVIRONMENT</span>
+      <header className="nav">
+        <a className="brand" href="/" aria-label="ZERO home">
+          <img src="/zero-mark.svg" alt="" />
+          <span>ZERO</span>
+        </a>
+        <div className="nav-meta">
+          <span className="live-dot" aria-hidden="true" />
+          <span>TEST BUILD</span>
+        </div>
       </header>
 
-      <section className="hero">
+      <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">PIN · PRIVATE · TEMPORARY · GONE</p>
-          <h1>Private communication without the baggage.</h1>
-          <p className="lead">A clean, privacy-first testing surface for ZERO identity, disappearing messages and private sharing.</p>
+          <div className="kicker"><span>01</span> PRIVATE COMMUNICATION</div>
+          <h1 id="hero-title">Say less.<br /><em>Keep less.</em></h1>
+          <p>ZERO is built for conversations that should not become permanent records.</p>
+          <div className="hero-line" aria-hidden="true" />
         </div>
-        <div className="hero-mark" aria-hidden="true"><img src="/zero-mark.svg" alt="" /></div>
+        <div className="hero-symbol" aria-hidden="true">
+          <div className="symbol-ring ring-one" />
+          <div className="symbol-ring ring-two" />
+          <img src="/zero-mark.svg" alt="" />
+          <span>DISAPPEAR</span>
+        </div>
       </section>
 
-      <section className="auth-card" aria-labelledby="auth-title">
-        <div className="auth-head">
-          <div><p className="eyebrow">IDENTITY</p><h2 id="auth-title">{mode === "signup" ? "Create your private identity" : "Sign in securely"}</h2></div>
-          <span className="status-dot">READY</span>
+      <section className="workspace" aria-labelledby="auth-title">
+        <div className="workspace-label">
+          <span>02 / IDENTITY</span>
+          <span>ENCRYPTED BY DESIGN</span>
         </div>
 
-        <div className="segmented" role="tablist" aria-label="Authentication mode">
-          <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "selected" : ""} onClick={() => selectMode("signup")}>Create ZERO</button>
-          <button type="button" role="tab" aria-selected={mode === "signin"} className={mode === "signin" ? "selected" : ""} onClick={() => selectMode("signin")}>Sign in</button>
-        </div>
+        <div className="auth-layout">
+          <aside className="side-note">
+            <p className="side-index">ZERO / ENTRY</p>
+            <h2>Your identity<br />doesn't need<br />to be public.</h2>
+            <p>Choose a private authentication method. The provider connection remains explicit until configured.</p>
+          </aside>
 
-        <p id="auth-status" className="status-copy" role="status">{status}</p>
+          <div className="auth-card">
+            <div className="card-topline">
+              <span className="card-kicker">{mode === "signup" ? "NEW IDENTITY" : "RETURNING IDENTITY"}</span>
+              <span className="secure-state"><span /> READY</span>
+            </div>
+            <h2 id="auth-title">{mode === "signup" ? "Create your ZERO" : "Welcome back"}</h2>
+            <p className="auth-intro">{status}</p>
 
-        <form onSubmit={handleContinue}>
-          <div className="methods" role="radiogroup" aria-label="Authentication method">
-            {methods.map((item) => (
-              <button key={item} type="button" role="radio" aria-checked={method === item} className={method === item ? "method active" : "method"} onClick={() => selectMethod(item)}>
-                {item === "email" ? "Email OTP" : item === "phone" ? "Phone OTP" : "Passkey"}
-              </button>
-            ))}
+            <div className="mode-switch" role="tablist" aria-label="Authentication mode">
+              <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => selectMode("signup")}>Create account</button>
+              <button type="button" role="tab" aria-selected={mode === "signin"} className={mode === "signin" ? "active" : ""} onClick={() => selectMode("signin")}>Sign in</button>
+            </div>
+
+            <form onSubmit={handleContinue}>
+              <div className="method-list" role="radiogroup" aria-label="Authentication method">
+                {methods.map((item) => (
+                  <button key={item} type="button" role="radio" aria-checked={method === item} className={method === item ? "method-card active" : "method-card"} onClick={() => selectMethod(item)}>
+                    <span className="method-icon" aria-hidden="true">{item === "email" ? "@" : item === "phone" ? "⌁" : "◈"}</span>
+                    <span><strong>{item === "email" ? "Email" : item === "phone" ? "Phone" : "Passkey"}</strong><small>{item === "passkey" ? "Device credential" : "One-time code"}</small></span>
+                    <span className="method-check" aria-hidden="true">{method === item ? "●" : "○"}</span>
+                  </button>
+                ))}
+              </div>
+
+              {method !== "passkey" ? (
+                <label className="field">
+                  <span>{method === "email" ? "Email address" : "Phone number"}</span>
+                  <input value={identifier} onChange={(event) => setIdentifier(event.target.value)} type={method === "email" ? "email" : "tel"} autoComplete={method === "email" ? "email" : "tel"} placeholder={method === "email" ? "you@example.com" : "+234 800 000 0000"} aria-describedby="auth-status" />
+                </label>
+              ) : null}
+
+              <button type="submit" className="continue-button">Continue <span aria-hidden="true">↗</span></button>
+            </form>
+
+            <p id="auth-status" className="sr-status" role="status">{status}</p>
           </div>
-
-          {method !== "passkey" ? (
-            <label className="field"><span>{method === "email" ? "Email address" : "Phone number"}</span><input value={identifier} onChange={(event) => setIdentifier(event.target.value)} type={method === "email" ? "email" : "tel"} autoComplete={method === "email" ? "email" : "tel"} placeholder={method === "email" ? "you@example.com" : "+234 800 000 0000"} /></label>
-          ) : null}
-
-          <button type="submit" className="primary">Continue <span aria-hidden="true">→</span></button>
-        </form>
-
-        <section className="activity" aria-label="Privacy-safe activity log">
-          <div className="activity-head"><strong>Activity</strong><span>Local diagnostic events only</span></div>
-          <ul>{logs.map((entry, index) => <li key={`${entry}-${index}`}>{entry}</li>)}</ul>
-        </section>
+        </div>
       </section>
 
-      <section className="feature-grid" aria-label="ZERO capabilities">
-        {features.map(([title, copy]) => <article key={title}><strong>{title}</strong><p>{copy}</p></article>)}
+      <section className="principles" aria-label="ZERO principles">
+        {principles.map(([number, title, copy]) => (
+          <article key={number}>
+            <span>{number}</span>
+            <div><strong>{title}</strong><p>{copy}</p></div>
+          </article>
+        ))}
       </section>
+
+      <section className="activity-panel" aria-label="Privacy-safe activity log">
+        <div><span className="panel-index">03 / ACTIVITY</span><strong>Local diagnostic trail</strong></div>
+        <ul>{logs.map((entry, index) => <li key={`${entry}-${index}`}>{entry}</li>)}</ul>
+      </section>
+
+      <footer className="footer"><span>ZERO</span><span>PIN · PRIVATE · TEMPORARY · GONE</span></footer>
     </main>
   );
 }
