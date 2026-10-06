@@ -1,180 +1,45 @@
-import { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useDynamicNotification } from "@/notifications/dynamic-notification-provider";
 
-type Mode = "signup" | "signin";
-type Method = "email" | "phone" | "passkey";
-
-const menu = [
-  ["⌂", "Home"],
-  ["◌", "Messages"],
-  ["+", "New message"],
-  ["◇", "Data Drops"],
-  ["▱", "Files"],
-  ["⌁", "Devices"],
-  ["✦", "Security"],
-  ["◎", "Activity"],
+type Chat={id:string;name:string;pin:string;preview:string;time:string;unread:number;online:boolean};
+type Msg={id:string;chatId:string;text:string;time:string;mine:boolean;ttl:string};
+const seedChats:Chat[]=[
+{id:"nova",name:"Nova Team",pin:"7Q2M-K9PX",preview:"The Windows test build is next.",time:"23:41",unread:2,online:true},
+{id:"tola",name:"Tola",pin:"4M8R-Q2AZ",preview:"Send it as a Data Drop.",time:"22:18",unread:0,online:true},
+{id:"ops",name:"ZERO Security",pin:"9X3K-T7VN",preview:"New device verified.",time:"Mon",unread:1,online:false},
+{id:"ade",name:"Ade",pin:"2H6P-W8CY",preview:"Perfect. It disappeared.",time:"Sun",unread:0,online:false}
+];
+const seed:Msg[]=[
+{id:"1",chatId:"nova",text:"ZERO test workspace is online.",time:"23:32",mine:false,ttl:"24h"},
+{id:"2",chatId:"nova",text:"I am testing the same conversation flow on Expo Go.",time:"23:35",mine:true,ttl:"24h"},
+{id:"3",chatId:"nova",text:"The Windows test build is next.",time:"23:41",mine:false,ttl:"1h"},
+{id:"4",chatId:"tola",text:"Send it as a Data Drop.",time:"22:18",mine:false,ttl:"24h"}
 ];
 
-export default function Home() {
-  const { width } = useWindowDimensions();
-  const compact = width < 700;
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [active, setActive] = useState("Home");
-  const [mode, setMode] = useState<Mode>("signup");
-  const [method, setMethod] = useState<Method>("email");
-  const [identifier, setIdentifier] = useState("");
-  const [status, setStatus] = useState("Create your private identity.");
-  const { notify } = useDynamicNotification();
+export default function Home(){
+ const [chats,setChats]=useState(seedChats);const [messages,setMessages]=useState(seed);const [activeId,setActiveId]=useState<string|null>(null);const [draft,setDraft]=useState("");const [query,setQuery]=useState("");const [ttl,setTtl]=useState("24h");const {notify}=useDynamicNotification();
+ const active=chats.find(c=>c.id===activeId);const visible=useMemo(()=>chats.filter(c=>(c.name+c.pin+c.preview).toLowerCase().includes(query.toLowerCase())),[chats,query]);
+ function open(id:string){setActiveId(id);setChats(list=>list.map(c=>c.id===id?{...c,unread:0}:c));}
+ function boundary(title:string){notify({title,message:"Test boundary reached. Provider transport is not connected yet."});}
+ function send(){const text=draft.trim();if(!text||!activeId)return;const time=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"}).format(new Date());setMessages(list=>[...list,{id:String(Date.now()),chatId:activeId,text,time,mine:true,ttl}]);setChats(list=>list.map(c=>c.id===activeId?{...c,preview:text,time}:c));setDraft("");notify({title:"Queued locally",message:"Network E2EE transport is not connected in this test build."});}
+ if(!active)return <View style={s.root}><View style={s.top}><View><Text style={s.brand}>ZERO</Text><Text style={s.tag}>PIN · PRIVATE · TEMPORARY · GONE</Text></View><Pressable onPress={()=>boundary("New chat")} style={s.circle}><Text style={s.circleText}>＋</Text></Pressable></View>
+  <View style={s.search}><Text style={s.muted}>⌕</Text><TextInput value={query} onChangeText={setQuery} placeholder="Search chats, PINs, files" placeholderTextColor="#6f7882" style={s.searchInput}/></View>
+  <View style={s.filters}><View style={s.filterOn}><Text style={s.filterOnText}>All</Text></View><Pressable onPress={()=>boundary("Unread")} style={s.filter}><Text style={s.filterText}>Unread</Text></Pressable><Pressable onPress={()=>boundary("Groups")} style={s.filter}><Text style={s.filterText}>Groups</Text></Pressable></View>
+  <ScrollView contentContainerStyle={s.list}>{visible.map(c=><Pressable key={c.id} onPress={()=>open(c.id)} style={s.row}><View style={s.avatar}><Text style={s.avatarText}>{c.name.slice(0,2).toUpperCase()}</Text>{c.online?<View style={s.online}/>:null}</View><View style={s.rowCopy}><View style={s.rowLine}><Text style={s.name}>{c.name}</Text><Text style={s.time}>{c.time}</Text></View><View style={s.rowLine}><Text numberOfLines={1} style={s.preview}>{c.preview}</Text>{c.unread?<View style={s.badge}><Text style={s.badgeText}>{c.unread}</Text></View>:null}</View></View></Pressable>)}</ScrollView>
+  <View style={s.bottom}><Pressable onPress={()=>boundary("Data Drops")}><Text style={s.bottomText}>◇ Drops</Text></Pressable><Text style={s.bottomActive}>◌ Chats</Text><Pressable onPress={()=>boundary("Settings")}><Text style={s.bottomText}>⚙ Settings</Text></Pressable></View>
+ </View>;
 
-  function choose(label: string) {
-    setActive(label);
-    setDrawerOpen(false);
-    if (label !== "Home") notify({ title: label, message: "This test surface is ready for its connected application flow." });
-  }
-
-  function continueFlow() {
-    if (method !== "passkey" && !identifier.trim()) {
-      const label = method === "email" ? "email address" : "phone number";
-      setStatus(`Enter your ${label}.`);
-      notify({ title: "One more detail", message: `Enter your ${label} to continue.` });
-      return;
-    }
-    if (method === "email" && !/^\S+@\S+\.\S+$/.test(identifier.trim())) {
-      setStatus("Enter a valid email address.");
-      notify({ title: "Check your email", message: "That address does not look valid yet." });
-      return;
-    }
-    if (method === "phone" && !/^[+0-9][0-9\s().-]{6,}$/.test(identifier.trim())) {
-      setStatus("Enter a valid phone number.");
-      notify({ title: "Check your number", message: "Enter a valid phone number." });
-      return;
-    }
-    const label = mode === "signup" ? "Sign-up" : "Sign-in";
-    const channel = method === "passkey" ? "Passkey" : `${method.toUpperCase()} OTP`;
-    setStatus(`${label} test request accepted. ${channel} provider boundary reached.`);
-    notify({ title: `${label} ready`, message: `${channel} test boundary reached.` });
-  }
-
-  const Drawer = () => (
-    <View style={styles.drawer}>
-      <View style={styles.traffic}><View style={styles.red}/><View style={styles.yellow}/><View style={styles.green}/></View>
-      <View style={styles.drawerBrand}><View style={styles.logo}><View style={styles.logoCore}/></View><Text style={styles.brandText}>ZERO</Text></View>
-      <View style={styles.identity}><View style={styles.avatar}><Text style={styles.avatarText}>Z</Text></View><View><Text style={styles.identityTitle}>Private identity</Text><Text style={styles.identityMeta}>PIN · TEMPORARY</Text></View></View>
-      <View style={styles.search}><Text style={styles.searchIcon}>⌕</Text><Text style={styles.searchText}>SEARCH…</Text></View>
-      <Text style={styles.groupLabel}>MENU</Text>
-      {menu.map(([icon, label]) => (
-        <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected: active === label }} onPress={() => choose(label)} style={({ pressed }) => [styles.navItem, active === label && styles.navActive, pressed && styles.pressed]}>
-          <Text style={[styles.navIcon, active === label && styles.navActiveText]}>{icon}</Text>
-          <Text style={[styles.navText, active === label && styles.navActiveText]}>{label}</Text>
-          {label === "Messages" ? <View style={styles.badge}><Text style={styles.badgeText}>3</Text></View> : null}
-        </Pressable>
-      ))}
-      <View style={styles.rule}/>
-      <Text style={styles.groupLabel}>GENERAL</Text>
-      <Pressable onPress={() => choose("Settings")} style={styles.navItem}><Text style={styles.navIcon}>⚙</Text><Text style={styles.navText}>Settings</Text></Pressable>
-      <Pressable onPress={() => choose("Lock ZERO")} style={styles.navItem}><Text style={styles.navIcon}>↪</Text><Text style={styles.navText}>Lock ZERO</Text></Pressable>
-    </View>
-  );
-
-  return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      {!compact ? <View style={styles.desktopDrawer}><Drawer /></View> : null}
-      {compact ? (
-        <Modal visible={drawerOpen} transparent animationType="fade" onRequestClose={() => setDrawerOpen(false)}>
-          <View style={styles.modalRoot}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Close navigation" style={styles.scrim} onPress={() => setDrawerOpen(false)} />
-            <View style={styles.mobileDrawer}><Drawer /></View>
-          </View>
-        </Modal>
-      ) : null}
-
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[styles.scroll, !compact && styles.scrollDesktop]}
-      >
-        <View style={styles.topbar}>
-          {compact ? <Pressable accessibilityRole="button" accessibilityLabel="Open navigation" onPress={() => setDrawerOpen(true)} style={styles.menuButton}><Text style={styles.menuGlyph}>☰</Text></Pressable> : null}
-          <View style={styles.topbarCopy}><Text style={styles.eyebrow}>ZERO / {active.toUpperCase()}</Text><Text style={styles.pageTitle}>{active === "Home" ? "Private communication." : active}</Text></View>
-          <View style={styles.testPill}><View style={styles.readyDot}/><Text style={styles.testText}>TEST</Text></View>
-        </View>
-
-        <View style={[styles.hero, compact && styles.heroCompact]}>
-          <Text style={styles.eyebrow}>PIN · PRIVATE · TEMPORARY · GONE</Text>
-          <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>Say what matters.{"\n"}<Text style={styles.heroMuted}>Keep only what should stay.</Text></Text>
-          <Text style={styles.lead}>ZERO is designed around private identity, encrypted communication and explicit message lifecycles.</Text>
-          <View style={styles.heroOrb}><View style={styles.heroOrbInner}><Text style={styles.orbZ}>Z</Text></View></View>
-        </View>
-
-        <View style={styles.quickGrid}>
-          {[["+", "New message", "Start privately"], ["◇", "Data Drop", "Share temporarily"], ["⌁", "Devices", "Review trust"]].map(([icon, title, copy]) => (
-            <Pressable key={title} onPress={() => choose(title)} style={({ pressed }) => [styles.quickCard, pressed && styles.pressed]}>
-              <View style={styles.quickIcon}><Text style={styles.quickIconText}>{icon}</Text></View>
-              <Text style={styles.quickTitle}>{title}</Text><Text style={styles.quickCopy}>{copy}</Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <View style={styles.authCard}>
-          <View style={styles.authMeta}><Text style={styles.groupLabel}>IDENTITY</Text><View style={styles.readyWrap}><View style={styles.readyDot}/><Text style={styles.readyText}>READY</Text></View></View>
-          <Text style={styles.authTitle}>{mode === "signup" ? "Create your ZERO" : "Welcome back"}</Text>
-          <Text accessibilityLiveRegion="polite" style={styles.status}>{status}</Text>
-
-          <View style={styles.segment}>
-            {(["signup", "signin"] as Mode[]).map((item) => (
-              <Pressable key={item} accessibilityRole="tab" accessibilityState={{ selected: mode === item }} onPress={() => { setMode(item); setStatus(item === "signup" ? "Create your private identity." : "Continue to your ZERO identity."); }} style={[styles.segmentItem, mode === item && styles.segmentActive]}>
-                <Text style={[styles.segmentText, mode === item && styles.segmentTextActive]}>{item === "signup" ? "Create account" : "Sign in"}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={[styles.methods, compact && styles.methodsCompact]}>
-            {(["email", "phone", "passkey"] as Method[]).map((item) => (
-              <Pressable key={item} accessibilityRole="radio" accessibilityState={{ selected: method === item }} onPress={() => setMethod(item)} style={[styles.method, method === item && styles.methodActive]}>
-                <Text style={styles.methodIcon}>{item === "email" ? "@" : item === "phone" ? "⌁" : "◇"}</Text>
-                <Text style={[styles.methodText, method === item && styles.methodTextActive]}>{item === "email" ? "Email" : item === "phone" ? "Phone" : "Passkey"}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {method !== "passkey" ? (
-            <View style={styles.field}>
-              <Text style={styles.label}>{method === "email" ? "Email address" : "Phone number"}</Text>
-              <TextInput
-                accessibilityLabel={method === "email" ? "Email address" : "Phone number"}
-                value={identifier}
-                onChangeText={setIdentifier}
-                placeholder={method === "email" ? "you@example.com" : "+234 800 000 0000"}
-                placeholderTextColor="#747A82"
-                keyboardType={method === "email" ? "email-address" : "phone-pad"}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete={method === "email" ? "email" : "tel"}
-                style={styles.input}
-                returnKeyType="go"
-                onSubmitEditing={continueFlow}
-              />
-            </View>
-          ) : null}
-          <Pressable accessibilityRole="button" onPress={continueFlow} style={({ pressed }) => [styles.primary, pressed && styles.pressed]}><Text style={styles.primaryText}>Continue →</Text></Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+ const thread=messages.filter(m=>m.chatId===active.id);
+ return <KeyboardAvoidingView style={s.root} behavior={Platform.OS==="ios"?"padding":undefined}>
+  <View style={s.chatHead}><Pressable onPress={()=>setActiveId(null)} style={s.back}><Text style={s.backText}>‹</Text></Pressable><View style={s.avatarSmall}><Text style={s.avatarText}>{active.name.slice(0,2).toUpperCase()}</Text></View><View style={s.person}><Text style={s.name}>{active.name}</Text><Text style={s.time}>{active.online?"online now":active.pin+" · private"}</Text></View><Pressable onPress={()=>boundary("Voice call")} style={s.headAction}><Text style={s.headActionText}>⌕</Text></Pressable><Pressable onPress={()=>boundary("Video call")} style={s.headAction}><Text style={s.headActionText}>▻</Text></Pressable></View>
+  <View style={s.secure}><Text style={s.secureText}>✦ END-TO-END ENCRYPTION BOUNDARY</Text></View>
+  <ScrollView contentContainerStyle={s.thread}>{thread.map(m=><View key={m.id} style={[s.bubble,m.mine&&s.mine]}><Text style={s.message}>{m.text}</Text><View style={s.meta}><Text style={s.metaText}>⌛ {m.ttl}</Text><Text style={s.metaText}>{m.time}{m.mine?"  ✓✓":""}</Text></View></View>)}</ScrollView>
+  <View style={s.ttls}>{["10s","1h","24h","7d"].map(x=><Pressable key={x} onPress={()=>setTtl(x)} style={[s.ttl,ttl===x&&s.ttlOn]}><Text style={[s.ttlText,ttl===x&&s.ttlTextOn]}>{x}</Text></Pressable>)}</View>
+  <View style={s.compose}><Pressable onPress={()=>boundary("Attachment picker")} style={s.plus}><Text style={s.circleText}>＋</Text></Pressable><TextInput value={draft} onChangeText={setDraft} onSubmitEditing={send} returnKeyType="send" placeholder="Message privately" placeholderTextColor="#737c86" style={s.input}/><Pressable onPress={send} style={s.send}><Text style={s.sendText}>↑</Text></Pressable></View>
+ </KeyboardAvoidingView>
 }
 
-const styles = StyleSheet.create({
-  root:{flex:1,backgroundColor:"#111318"},scroll:{padding:14,paddingTop:18,paddingBottom:44,gap:14},scrollDesktop:{marginLeft:300,padding:24,maxWidth:1180,width:"100%",alignSelf:"center"},desktopDrawer:{position:"absolute",left:22,top:22,bottom:22,width:260,zIndex:20},drawer:{flex:1,borderRadius:30,borderWidth:1,borderColor:"rgba(255,255,255,0.16)",backgroundColor:"rgba(38,41,47,0.98)",overflow:"hidden",paddingBottom:18},traffic:{height:42,flexDirection:"row",alignItems:"center",gap:6,paddingHorizontal:20,borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,0.07)"},red:{width:8,height:8,borderRadius:4,backgroundColor:"#FF5F57"},yellow:{width:8,height:8,borderRadius:4,backgroundColor:"#FEBC2E"},green:{width:8,height:8,borderRadius:4,backgroundColor:"#28C840"},drawerBrand:{height:66,flexDirection:"row",alignItems:"center",gap:10,paddingHorizontal:18,borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,0.08)"},logo:{width:34,height:34,borderRadius:17,borderWidth:5,borderColor:"#7DE3DA",alignItems:"center",justifyContent:"center"},logoCore:{width:10,height:10,borderRadius:5,backgroundColor:"#7DE3DA"},brandText:{color:"#FFF",fontSize:19,fontWeight:"900",letterSpacing:4},identity:{minHeight:76,flexDirection:"row",alignItems:"center",gap:10,paddingHorizontal:18,borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,0.08)"},avatar:{width:40,height:40,borderRadius:20,backgroundColor:"#15181D",borderWidth:1,borderColor:"rgba(255,255,255,0.18)",alignItems:"center",justifyContent:"center"},avatarText:{color:"#7DE3DA",fontWeight:"900"},identityTitle:{color:"#FFF",fontSize:13,fontWeight:"800"},identityMeta:{color:"#989DA5",fontSize:9,letterSpacing:1.2,marginTop:3},search:{height:38,margin:13,borderWidth:1,borderColor:"rgba(255,255,255,0.13)",borderRadius:19,flexDirection:"row",alignItems:"center",gap:8,paddingHorizontal:12},searchIcon:{color:"#AAA",fontSize:16},searchText:{color:"#999DA4",fontSize:9,letterSpacing:1.4},groupLabel:{color:"#B3B6BC",fontSize:9,fontWeight:"900",letterSpacing:1.8,marginHorizontal:18,marginVertical:8},navItem:{minHeight:46,flexDirection:"row",alignItems:"center",gap:9,paddingHorizontal:17},navActive:{backgroundColor:"#7DE3DA"},navIcon:{width:30,textAlign:"center",color:"#FFF",fontSize:17},navText:{flex:1,color:"#E4E5E7",fontSize:13,fontWeight:"600"},navActiveText:{color:"#071211",fontWeight:"900"},badge:{minWidth:21,height:21,borderRadius:11,backgroundColor:"#F24459",alignItems:"center",justifyContent:"center"},badgeText:{color:"#FFF",fontSize:10,fontWeight:"900"},rule:{height:1,backgroundColor:"rgba(255,255,255,0.08)",marginVertical:8,marginHorizontal:18},modalRoot:{flex:1,flexDirection:"row"},scrim:{...StyleSheet.absoluteFillObject,backgroundColor:"rgba(0,0,0,0.62)"},mobileDrawer:{width:"82%",maxWidth:310,margin:10,zIndex:2},topbar:{minHeight:72,flexDirection:"row",alignItems:"center",gap:12,borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,0.1)",paddingBottom:12},menuButton:{width:44,height:44,borderRadius:22,borderWidth:1,borderColor:"rgba(255,255,255,0.14)",backgroundColor:"#25282E",alignItems:"center",justifyContent:"center"},menuGlyph:{color:"#FFF",fontSize:20},topbarCopy:{flex:1},eyebrow:{color:"#7DE3DA",fontSize:9,fontWeight:"900",letterSpacing:1.6},pageTitle:{color:"#F7F8F8",fontSize:25,fontWeight:"900",letterSpacing:-1,marginTop:3},testPill:{flexDirection:"row",alignItems:"center",gap:6,paddingHorizontal:10,paddingVertical:7,borderRadius:20,borderWidth:1,borderColor:"rgba(255,255,255,0.12)"},readyDot:{width:6,height:6,borderRadius:3,backgroundColor:"#7DE3DA"},testText:{color:"#A9ADB3",fontSize:9,fontWeight:"900"},hero:{minHeight:330,borderRadius:28,borderWidth:1,borderColor:"rgba(255,255,255,0.13)",backgroundColor:"#202329",padding:28,overflow:"hidden"},heroCompact:{minHeight:360,padding:22},heroTitle:{color:"#FFF",fontSize:56,lineHeight:57,fontWeight:"900",letterSpacing:-3,marginTop:22,maxWidth:700},heroTitleCompact:{fontSize:42,lineHeight:44,letterSpacing:-2},heroMuted:{color:"#92969E"},lead:{color:"#A4A8AE",fontSize:14,lineHeight:21,maxWidth:560,marginTop:17},heroOrb:{position:"absolute",right:-30,bottom:-60,width:220,height:220,borderRadius:110,borderWidth:1,borderColor:"rgba(125,227,218,0.18)",alignItems:"center",justifyContent:"center"},heroOrbInner:{width:118,height:118,borderRadius:59,borderWidth:1,borderColor:"rgba(125,227,218,0.28)",backgroundColor:"rgba(125,227,218,0.06)",alignItems:"center",justifyContent:"center"},orbZ:{color:"#7DE3DA",fontSize:54,fontWeight:"300"},quickGrid:{flexDirection:"row",flexWrap:"wrap",gap:10},quickCard:{flexGrow:1,flexBasis:180,minHeight:100,borderRadius:20,borderWidth:1,borderColor:"rgba(255,255,255,0.12)",backgroundColor:"#1D2025",padding:15},quickIcon:{width:36,height:36,borderRadius:18,backgroundColor:"rgba(125,227,218,0.1)",alignItems:"center",justifyContent:"center"},quickIconText:{color:"#7DE3DA",fontSize:18},quickTitle:{color:"#FFF",fontSize:13,fontWeight:"800",marginTop:9},quickCopy:{color:"#858A92",fontSize:10,marginTop:3},authCard:{borderRadius:26,borderWidth:1,borderColor:"rgba(255,255,255,0.13)",backgroundColor:"#1B1E23",padding:20,gap:13},authMeta:{flexDirection:"row",alignItems:"center",justifyContent:"space-between"},readyWrap:{flexDirection:"row",alignItems:"center",gap:6},readyText:{color:"#7DE3DA",fontSize:9,fontWeight:"900"},authTitle:{color:"#FFF",fontSize:28,fontWeight:"900",letterSpacing:-1},status:{color:"#A1A5AC",fontSize:13,lineHeight:19},segment:{flexDirection:"row",padding:4,borderRadius:14,backgroundColor:"#111318",borderWidth:1,borderColor:"rgba(255,255,255,0.1)"},segmentItem:{flex:1,minHeight:44,alignItems:"center",justifyContent:"center",borderRadius:10},segmentActive:{backgroundColor:"#EEFFFD"},segmentText:{color:"#979CA4",fontWeight:"800",fontSize:12},segmentTextActive:{color:"#071211"},methods:{flexDirection:"row",gap:7},methodsCompact:{flexWrap:"wrap"},method:{flex:1,minWidth:92,minHeight:58,borderRadius:14,borderWidth:1,borderColor:"rgba(255,255,255,0.12)",backgroundColor:"#12151A",alignItems:"center",justifyContent:"center",gap:3},methodActive:{borderColor:"rgba(125,227,218,0.5)",backgroundColor:"rgba(125,227,218,0.09)"},methodIcon:{color:"#7DE3DA",fontSize:15},methodText:{color:"#9EA3AA",fontSize:10,fontWeight:"800"},methodTextActive:{color:"#FFF"},field:{gap:7},label:{color:"#D0D2D5",fontSize:11,fontWeight:"800"},input:{minHeight:50,borderRadius:13,borderWidth:1,borderColor:"rgba(255,255,255,0.13)",backgroundColor:"#111318",color:"#FFF",paddingHorizontal:13,fontSize:16},primary:{minHeight:52,borderRadius:13,backgroundColor:"#D8FFFB",alignItems:"center",justifyContent:"center"},primaryText:{color:"#071211",fontSize:15,fontWeight:"900"},pressed:{opacity:.78}
+const s=StyleSheet.create({
+root:{flex:1,backgroundColor:"#090c10",paddingTop:Platform.OS==="android"?24:0},top:{height:76,paddingHorizontal:18,flexDirection:"row",alignItems:"center",justifyContent:"space-between",borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,.08)"},brand:{color:"#fff",fontSize:21,fontWeight:"900",letterSpacing:4},tag:{color:"#6e7b83",fontSize:8,fontWeight:"800",letterSpacing:1.2,marginTop:3},circle:{width:40,height:40,borderRadius:20,borderWidth:1,borderColor:"rgba(255,255,255,.12)",alignItems:"center",justifyContent:"center",backgroundColor:"#141a20"},circleText:{color:"#79e5d8",fontSize:20},search:{height:44,marginHorizontal:14,marginTop:12,borderWidth:1,borderColor:"rgba(255,255,255,.09)",borderRadius:14,backgroundColor:"#11171d",paddingHorizontal:12,flexDirection:"row",alignItems:"center",gap:8},searchInput:{flex:1,color:"#fff",fontSize:13},muted:{color:"#77818b"},filters:{flexDirection:"row",gap:8,padding:10,paddingHorizontal:14},filter,.filterOn:{paddingHorizontal:13,paddingVertical:8,borderRadius:18},filterOn:{backgroundColor:"rgba(121,229,216,.13)"},filterText:{color:"#7d8791",fontSize:10,fontWeight:"800"},filterOnText:{color:"#79e5d8",fontSize:10,fontWeight:"900"},list:{paddingHorizontal:8,paddingBottom:90},row:{minHeight:76,borderRadius:17,padding:10,flexDirection:"row",alignItems:"center",gap:12},avatar:{width:50,height:50,borderRadius:25,backgroundColor:"#192128",borderWidth:1,borderColor:"rgba(255,255,255,.11)",alignItems:"center",justifyContent:"center"},avatarSmall:{width:42,height:42,borderRadius:21,backgroundColor:"#192128",alignItems:"center",justifyContent:"center"},avatarText:{color:"#79e5d8",fontSize:11,fontWeight:"900"},online:{position:"absolute",right:1,bottom:2,width:10,height:10,borderRadius:5,backgroundColor:"#56e69b",borderWidth:2,borderColor:"#090c10"},rowCopy:{flex:1,gap:7},rowLine:{flexDirection:"row",alignItems:"center",gap:8},name:{flex:1,color:"#f6f8f8",fontSize:14,fontWeight:"800"},time:{color:"#747f89",fontSize:10},preview:{flex:1,color:"#8b949e",fontSize:11},badge:{minWidth:21,height:21,borderRadius:11,backgroundColor:"#79e5d8",alignItems:"center",justifyContent:"center"},badgeText:{color:"#07110f",fontSize:9,fontWeight:"900"},bottom:{position:"absolute",left:0,right:0,bottom:0,height:70,paddingBottom:8,borderTopWidth:1,borderTopColor:"rgba(255,255,255,.08)",backgroundColor:"#0d1217",flexDirection:"row",alignItems:"center",justifyContent:"space-around"},bottomText:{color:"#747e88",fontSize:10,fontWeight:"800"},bottomActive:{color:"#79e5d8",fontSize:10,fontWeight:"900"},chatHead:{minHeight:70,paddingHorizontal:10,flexDirection:"row",alignItems:"center",gap:9,borderBottomWidth:1,borderBottomColor:"rgba(255,255,255,.08)"},back:{width:36,height:36,alignItems:"center",justifyContent:"center"},backText:{color:"#fff",fontSize:32,fontWeight:"300"},person:{flex:1},headAction:{width:36,height:36,borderRadius:18,borderWidth:1,borderColor:"rgba(255,255,255,.09)",alignItems:"center",justifyContent:"center"},headActionText:{color:"#aeb8c1",fontSize:15},secure:{height:28,alignItems:"center",justifyContent:"center",backgroundColor:"rgba(121,229,216,.035)",borderBottomWidth:1,borderBottomColor:"rgba(121,229,216,.08)"},secureText:{color:"#72938f",fontSize:8,fontWeight:"900",letterSpacing:.7},thread:{flexGrow:1,padding:14,gap:8,justifyContent:"flex-end"},bubble:{alignSelf:"flex-start",maxWidth:"84%",padding:11,borderRadius:17,borderTopLeftRadius:6,backgroundColor:"#192027",borderWidth:1,borderColor:"rgba(255,255,255,.08)"},mine:{alignSelf:"flex-end",borderTopLeftRadius:17,borderTopRightRadius:6,backgroundColor:"#15312d",borderColor:"rgba(121,229,216,.12)"},message:{color:"#f3f6f6",fontSize:14,lineHeight:20},meta:{flexDirection:"row",justifyContent:"space-between",gap:14,marginTop:6},metaText:{color:"#718079",fontSize:8},ttls:{height:38,flexDirection:"row",alignItems:"center",justifyContent:"center",gap:6},ttl:{paddingHorizontal:10,paddingVertical:5,borderRadius:12},ttlOn:{backgroundColor:"rgba(121,229,216,.12)"},ttlText:{color:"#707a84",fontSize:9,fontWeight:"800"},ttlTextOn:{color:"#79e5d8"},compose:{minHeight:68,paddingHorizontal:10,paddingBottom:8,flexDirection:"row",alignItems:"center",gap:8,borderTopWidth:1,borderTopColor:"rgba(255,255,255,.08)",backgroundColor:"#0d1217"},plus:{width:40,height:40,borderRadius:20,borderWidth:1,borderColor:"rgba(255,255,255,.09)",alignItems:"center",justifyContent:"center"},input:{flex:1,height:46,borderRadius:17,borderWidth:1,borderColor:"rgba(255,255,255,.09)",backgroundColor:"#151b21",paddingHorizontal:14,color:"#fff",fontSize:14},send:{width:42,height:42,borderRadius:21,backgroundColor:"#79e5d8",alignItems:"center",justifyContent:"center"},sendText:{color:"#07110f",fontSize:19,fontWeight:"900"}
 });
