@@ -1,0 +1,36 @@
+name: ZERO Windows Test Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/desktop/**"
+      - "apps/web/**"
+      - ".github/workflows/windows-test-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package.json
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm install
+      - name: Build Windows NSIS installer
+        working-directory: apps/desktop
+        run: npm run dist:win
+      - name: Upload Windows test installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZERO-Windows-Test
+          path: apps/desktop/dist/*.exe
+          if-no-files-found: error
