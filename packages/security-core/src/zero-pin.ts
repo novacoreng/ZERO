@@ -11,9 +11,7 @@ export function isValidZeroPin(value: string): boolean {
 }
 
 export function generateZeroPin(randomBytes: Uint8Array): string {
-  if (randomBytes.length < ZERO_PIN_BODY_LENGTH) {
-    throw new Error("Insufficient randomness for ZERO PIN generation");
-  }
+  if (randomBytes.length < ZERO_PIN_BODY_LENGTH) throw new Error("Insufficient randomness for ZERO PIN generation");
   let body = "";
   for (let i = 0; i < ZERO_PIN_BODY_LENGTH; i += 1) {
     const byte = randomBytes[i];
@@ -23,17 +21,14 @@ export function generateZeroPin(randomBytes: Uint8Array): string {
   return body.slice(0, 4) + "-" + body.slice(4);
 }
 
-export async function derivePinLookupDigest(
-  normalizedPin: string,
-  serverSecret: Uint8Array
-): Promise<ArrayBuffer> {
+export async function derivePinLookupDigest(normalizedPin: string, serverSecret: Uint8Array): Promise<ArrayBuffer> {
   const pin = normalizeZeroPin(normalizedPin);
   if (!isValidZeroPin(pin)) throw new Error("Invalid ZERO PIN");
   if (serverSecret.length < 32) throw new Error("Lookup secret must be at least 256 bits");
-  const key = await crypto.subtle.importKey(
-    "raw", serverSecret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-  );
-  return crypto.subtle.sign("HMAC", key, new TextEncoder().encode(pin));
+  const secretBytes = Uint8Array.from(serverSecret);
+  const key = await crypto.subtle.importKey("raw", secretBytes.buffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const pinBytes = new TextEncoder().encode(pin);
+  return crypto.subtle.sign("HMAC", key, pinBytes.buffer);
 }
 
 export const ZERO_PIN_POLICY = Object.freeze({
