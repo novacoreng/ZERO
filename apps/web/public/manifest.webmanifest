@@ -1,0 +1,10 @@
+{
+  "name":"ZERO Private Messaging",
+  "short_name":"ZERO",
+  "description":"Privacy-first temporary encrypted communications.",
+  "start_url":"/",
+  "display":"standalone",
+  "background_color":"#090c10",
+  "theme_color":"#090c10",
+  "icons":[{"src":"/zero-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
