@@ -18,4 +18,4 @@ export function validateBusinessId(v:string):boolean{return /^[A-Za-z0-9_-]{16,1
 export function validateOrganizationName(v:string):boolean{const n=v.trim();return n.length>=2&&n.length<=200}
 export function canManageSecurity(role:BusinessMemberRole):boolean{return role==="OWNER"||role==="ADMIN"||role==="SECURITY_ADMIN"}
 export function isReadOnly(role:BusinessMemberRole):boolean{return role==="AUDITOR"}
-export function canDecryptUserMessages():boolean{return ZERO_BUSINESS_POLICY.businessCannotDecryptUserMessages===false}
+export function canDecryptUserMessages():boolean{return !ZERO_BUSINESS_POLICY.businessCannotDecryptUserMessages}
