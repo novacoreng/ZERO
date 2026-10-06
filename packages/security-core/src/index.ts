@@ -17,4 +17,4 @@ export * from "./production-hardening.js";
 
 export * from "./public-security-launch.js";
 
-export * from "./production-launch.js";
+export { PRODUCTION_LAUNCH_POLICY, hasCompleteLaunchEvidence, canLaunchProduction, missingLaunchEvidence, type LaunchEvidence } from "./production-launch.js";
