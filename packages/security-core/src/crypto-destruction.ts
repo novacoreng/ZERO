@@ -6,4 +6,4 @@ export function validateDestructionTargetId(value:string):boolean{return /^[A-Za
 export function validateKeyVersion(value:number):boolean{return Number.isInteger(value)&&value>0;}
 export function nextDestructionState(state:DestructionState):DestructionState{if(state==="ACTIVE")return "DESTROYING";if(state==="DESTROYING")return "DESTROYED";return "DESTROYED";}
 export function assertDestructionTransition(from:DestructionState,to:DestructionState):void{const allowed:Record<DestructionState,readonly DestructionState[]>={ACTIVE:["ACTIVE","DESTROYING"],DESTROYING:["DESTROYING","DESTROYED"],DESTROYED:["DESTROYED"]};if(!allowed[from].includes(to))throw new Error("Invalid destruction state transition");}
-export function destructionEvidenceDigest(input:Uint8Array):Promise<ArrayBuffer>{return crypto.subtle.digest("SHA-256",input);}
+export function destructionEvidenceDigest(input:Uint8Array):Promise<ArrayBuffer>{const bytes=Uint8Array.from(input);return crypto.subtle.digest("SHA-256",bytes.buffer);}
