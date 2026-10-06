@@ -1,199 +1,81 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
-type Mode = "signin" | "signup";
-type AuthMethod = "email" | "phone" | "passkey";
-type Notice = { title: string; message: string } | null;
+type Chat = { id:string; name:string; pin:string; preview:string; time:string; unread:number; online:boolean; kind:"direct"|"group" };
+type Message = { id:string; chatId:string; text:string; time:string; mine:boolean; ttl:string; state:"sent"|"read" };
 
-const methods: AuthMethod[] = ["email", "phone", "passkey"];
-const primaryNav = [
-  ["Home", "⌂"],
-  ["Messages", "◌"],
-  ["New message", "+"],
-  ["Data Drops", "◇"],
-  ["Files", "▱"],
-  ["Devices", "⌁"],
+const seedChats:Chat[]=[
+{id:"nova",name:"Nova Team",pin:"7Q2M-K9PX",preview:"The Windows test build is next.",time:"23:41",unread:2,online:true,kind:"group"},
+{id:"tola",name:"Tola",pin:"4M8R-Q2AZ",preview:"Send it as a Data Drop.",time:"22:18",unread:0,online:true,kind:"direct"},
+{id:"ops",name:"ZERO Security",pin:"9X3K-T7VN",preview:"New device verified.",time:"Mon",unread:1,online:false,kind:"group"},
+{id:"ade",name:"Ade",pin:"2H6P-W8CY",preview:"Perfect. It disappeared.",time:"Sun",unread:0,online:false,kind:"direct"}
 ];
-const privacyNav = [["Security", "✦"], ["Activity", "◎"]];
-const generalNav = [["Settings", "⚙"], ["Lock ZERO", "↪"]];
+const seedMessages:Message[]=[
+{id:"m1",chatId:"nova",text:"ZERO test workspace is online.",time:"23:32",mine:false,ttl:"24h",state:"read"},
+{id:"m2",chatId:"nova",text:"I am testing the same conversation flow on web and Expo Go.",time:"23:35",mine:true,ttl:"24h",state:"read"},
+{id:"m3",chatId:"nova",text:"The Windows test build is next.",time:"23:41",mine:false,ttl:"1h",state:"read"},
+{id:"m4",chatId:"tola",text:"Send it as a Data Drop.",time:"22:18",mine:false,ttl:"24h",state:"read"},
+{id:"m5",chatId:"ops",text:"New device verified.",time:"Mon",mine:false,ttl:"7d",state:"read"}
+];
 
-function timestamp() {
-  return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-}
+export default function Home(){
+ const [chats,setChats]=useState(seedChats);
+ const [messages,setMessages]=useState(seedMessages);
+ const [activeId,setActiveId]=useState("nova");
+ const [draft,setDraft]=useState("");
+ const [query,setQuery]=useState("");
+ const [ttl,setTtl]=useState("24h");
+ const [notice,setNotice]=useState("TEST MODE · local conversation data");
+ const [mobileList,setMobileList]=useState(true);
+ const active=chats.find(c=>c.id===activeId)??chats[0];
+ const visible=useMemo(()=>chats.filter(c=>(c.name+" "+c.pin+" "+c.preview).toLowerCase().includes(query.toLowerCase())),[chats,query]);
+ const thread=messages.filter(m=>m.chatId===activeId);
+ function selectChat(id:string){setActiveId(id);setMobileList(false);setChats(list=>list.map(c=>c.id===id?{...c,unread:0}:c));}
+ function send(e:FormEvent){e.preventDefault();const text=draft.trim();if(!text)return;const now=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"}).format(new Date());setMessages(list=>[...list,{id:crypto.randomUUID(),chatId:activeId,text,time:now,mine:true,ttl,state:"sent"}]);setChats(list=>list.map(c=>c.id===activeId?{...c,preview:text,time:now}:c));setDraft("");setNotice("Message queued in local test mode. Network E2EE transport is not connected.");}
+ function action(label:string){setNotice(label+" test boundary reached.");}
+ return <main className="zero-shell">
+  <aside className={mobileList?"rail mobile-show":"rail"}>
+   <div className="brand"><img src="/zero-mark.svg" alt=""/><div><strong>ZERO</strong><small>PRIVATE · TEMPORARY</small></div><button onClick={()=>action("New chat")} aria-label="New chat">＋</button></div>
+   <label className="search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search chats, PINs, files"/></label>
+   <div className="filters"><button className="active">All</button><button onClick={()=>action("Unread filter")}>Unread</button><button onClick={()=>action("Groups filter")}>Groups</button></div>
+   <div className="chat-list">{visible.map(chat=><button key={chat.id} className={activeId===chat.id?"chat-row active":"chat-row"} onClick={()=>selectChat(chat.id)}>
+    <span className="avatar">{chat.name.slice(0,2).toUpperCase()}<i className={chat.online?"online":""}/></span>
+    <span className="chat-copy"><span><strong>{chat.name}</strong><time>{chat.time}</time></span><span><small>{chat.preview}</small>{chat.unread?<b>{chat.unread}</b>:null}</span></span>
+   </button>)}</div>
+   <div className="rail-foot"><button onClick={()=>action("Data Drops")}>◇ Data Drops</button><button onClick={()=>action("Settings")}>⚙ Settings</button></div>
+  </aside>
 
-export default function Home() {
-  const [mode, setMode] = useState<Mode>("signup");
-  const [method, setMethod] = useState<AuthMethod>("email");
-  const [identifier, setIdentifier] = useState("");
-  const [status, setStatus] = useState("Choose how you want to enter ZERO.");
-  const [notice, setNotice] = useState<Notice>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [active, setActive] = useState("Home");
-  const [logs, setLogs] = useState<string[]>(["ZERO client initialized.", "Private authentication boundary ready."]);
-  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  <section className={mobileList?"conversation mobile-hide":"conversation"}>
+   <header className="conversation-head">
+    <button className="back" onClick={()=>setMobileList(true)} aria-label="Back to chats">‹</button>
+    <span className="avatar large">{active.name.slice(0,2).toUpperCase()}<i className={active.online?"online":""}/></span>
+    <div className="person"><strong>{active.name}</strong><small>{active.online?"online now":active.pin+" · private"}</small></div>
+    <div className="head-actions"><button onClick={()=>action("Encrypted voice call")} aria-label="Voice call">⌕</button><button onClick={()=>action("Encrypted video call")} aria-label="Video call">▻</button><button onClick={()=>action("Conversation details")} aria-label="Conversation details">•••</button></div>
+   </header>
+   <div className="security-strip"><span>✦ End-to-end encryption boundary</span><span>Messages expire by policy</span></div>
+   <div className="thread">
+    <div className="day">TODAY</div>
+    {thread.map(m=><article key={m.id} className={m.mine?"bubble mine":"bubble"}>
+      <p>{m.text}</p><footer><span>⌛ {m.ttl}</span><time>{m.time}</time>{m.mine?<span>{m.state==="read"?"✓✓":"✓"}</span>:null}</footer>
+    </article>)}
+   </div>
+   <form className="composer" onSubmit={send}>
+    <button type="button" onClick={()=>action("Attachment picker")} aria-label="Attach file">＋</button>
+    <input value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Message privately" aria-label="Message"/>
+    <select value={ttl} onChange={e=>setTtl(e.target.value)} aria-label="Message expiry"><option>10s</option><option>1h</option><option>24h</option><option>7d</option></select>
+    <button className="send" aria-label="Send message">↑</button>
+   </form>
+  </section>
 
-  useEffect(() => () => {
-    if (noticeTimer.current) clearTimeout(noticeTimer.current);
-  }, []);
+  <aside className="details">
+   <div className="profile-orb">{active.name.slice(0,2).toUpperCase()}</div><h2>{active.name}</h2><p>{active.pin}</p>
+   <div className="detail-actions"><button onClick={()=>action("Search in conversation")}>⌕<span>Search</span></button><button onClick={()=>action("Mute")}>◌<span>Mute</span></button><button onClick={()=>action("Secure Share")}>◇<span>Drop</span></button></div>
+   <section><small>PRIVACY</small><div><span>Message expiry</span><strong>{ttl}</strong></div><div><span>Forwarding</span><strong>Off</strong></div><div><span>Read receipts</span><strong>On</strong></div></section>
+   <section><small>SHARED</small><button onClick={()=>action("Shared media")}>▧ Media and files <span>12</span></button><button onClick={()=>action("Secure links")}>⌁ Secure links <span>4</span></button></section>
+   <button className="danger" onClick={()=>action("Cryptographic Shred")}>✦ Cryptographic Shred</button>
+  </aside>
 
-  function addLog(message: string) {
-    setLogs((current) => [...current.slice(-5), `[${timestamp()}] ${message}`]);
-    console.info("[ZERO]", message);
-  }
-
-  function notify(title: string, message: string) {
-    if (noticeTimer.current) clearTimeout(noticeTimer.current);
-    setNotice({ title, message });
-    noticeTimer.current = setTimeout(() => setNotice(null), 3400);
-  }
-
-  function chooseNav(label: string) {
-    setActive(label);
-    setMobileOpen(false);
-    addLog(`Navigation selected: ${label}.`);
-    if (label !== "Home") notify(label, "This module is ready for its connected application flow.");
-  }
-
-  function selectMode(next: Mode) {
-    setMode(next);
-    setStatus(next === "signup" ? "Create a private ZERO identity." : "Continue to your ZERO identity.");
-  }
-
-  function selectMethod(next: AuthMethod) {
-    setMethod(next);
-    setStatus(next === "passkey" ? "Passkey selected. Continue to the secure provider boundary." : `Enter your ${next === "email" ? "email address" : "phone number"} to continue.`);
-  }
-
-  function handleContinue(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (method !== "passkey" && !identifier.trim()) {
-      const label = method === "email" ? "email address" : "phone number";
-      setStatus(`Enter your ${label} before continuing.`);
-      notify("One more detail", `Enter your ${label} to continue.`);
-      return;
-    }
-    if (method === "email" && !/^\S+@\S+\.\S+$/.test(identifier.trim())) {
-      setStatus("Enter a valid email address.");
-      notify("Check your email", "That address does not look valid yet.");
-      return;
-    }
-    if (method === "phone" && !/^[+0-9][0-9\s().-]{6,}$/.test(identifier.trim())) {
-      setStatus("Enter a valid phone number.");
-      notify("Check your number", "Enter a valid phone number.");
-      return;
-    }
-    const action = mode === "signup" ? "Sign-up" : "Sign-in";
-    const channel = method === "passkey" ? "Passkey" : `${method.toUpperCase()} OTP`;
-    setStatus(`${action} test request accepted. ${channel} provider boundary reached.`);
-    notify(`${action} ready`, `${channel} provider boundary reached.`);
-    addLog(`${action} accepted: ${channel} boundary reached.`);
-  }
-
-  function NavGroup({ title, items }: { title: string; items: string[][] }) {
-    return (
-      <div className="nav-group">
-        <span className="nav-label">{title}</span>
-        {items.map(([label, icon]) => (
-          <button key={label} type="button" className={active === label ? "side-link active" : "side-link"} aria-current={active === label ? "page" : undefined} onClick={() => chooseNav(label)} title={collapsed ? label : undefined}>
-            <span className="side-icon" aria-hidden="true">{icon}</span>
-            <span className="side-text">{label}</span>
-            {label === "Messages" ? <span className="badge">3</span> : null}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <main className={collapsed ? "app collapsed" : "app"}>
-      {notice ? (
-        <div className="dynamic-island" role="status" aria-live="polite">
-          <span className="island-mark"><img src="/zero-mark.svg" alt="" /></span>
-          <span className="island-copy"><strong>{notice.title}</strong><small>{notice.message}</small></span>
-          <button type="button" className="island-close" aria-label="Dismiss notification" onClick={() => setNotice(null)}>×</button>
-        </div>
-      ) : null}
-
-      <button type="button" className="mobile-menu" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}>☰</button>
-      {mobileOpen ? <button type="button" className="scrim" aria-label="Close navigation" onClick={() => setMobileOpen(false)} /> : null}
-
-      <aside className={mobileOpen ? "sidebar mobile-open" : "sidebar"} aria-label="ZERO navigation">
-        <div className="traffic" aria-hidden="true"><i /><i /><i /></div>
-        <div className="sidebar-head">
-          <a href="/" className="side-brand" aria-label="ZERO home"><img src="/zero-mark.svg" alt="" /><span>ZERO</span></a>
-          <button type="button" className="collapse-button" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed((value) => !value)}>{collapsed ? "›" : "‹"}</button>
-        </div>
-
-        <div className="identity">
-          <div className="avatar"><img src="/zero-mark.svg" alt="" /></div>
-          <div className="identity-copy"><strong>Private identity</strong><span>PIN · TEMPORARY</span></div>
-          <span className="chevron" aria-hidden="true">›</span>
-        </div>
-
-        <div className="search-wrap"><span aria-hidden="true">⌕</span><input aria-label="Search ZERO" placeholder="SEARCH…" /></div>
-
-        <nav className="sidebar-scroll">
-          <NavGroup title="MENU" items={primaryNav} />
-          <NavGroup title="PRIVACY" items={privacyNav} />
-          <NavGroup title="GENERAL" items={generalNav} />
-        </nav>
-      </aside>
-
-      <section className="content-shell">
-        <header className="content-topbar">
-          <div><span className="eyebrow">ZERO / {active.toUpperCase()}</span><h1>{active === "Home" ? "Private communication." : active}</h1></div>
-          <span className="test-pill"><i /> TEST BUILD</span>
-        </header>
-
-        <section className="welcome-grid">
-          <article className="statement-card">
-            <span className="eyebrow">PIN · PRIVATE · TEMPORARY · GONE</span>
-            <h2>Say what matters.<br /><em>Keep only what should stay.</em></h2>
-            <p>ZERO is designed around private identity, encrypted communication and explicit message lifecycles.</p>
-            <div className="statement-mark"><img src="/zero-mark.svg" alt="" /></div>
-          </article>
-
-          <section className="auth-card" aria-labelledby="auth-title">
-            <div className="auth-meta"><span>IDENTITY</span><span className="ready"><i /> READY</span></div>
-            <h2 id="auth-title">{mode === "signup" ? "Create your ZERO" : "Welcome back"}</h2>
-            <p className="auth-intro">{status}</p>
-
-            <div className="mode-switch" role="tablist" aria-label="Authentication mode">
-              <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => selectMode("signup")}>Create account</button>
-              <button type="button" role="tab" aria-selected={mode === "signin"} className={mode === "signin" ? "active" : ""} onClick={() => selectMode("signin")}>Sign in</button>
-            </div>
-
-            <form onSubmit={handleContinue}>
-              <div className="method-list" role="radiogroup" aria-label="Authentication method">
-                {methods.map((item) => (
-                  <button key={item} type="button" role="radio" aria-checked={method === item} className={method === item ? "method active" : "method"} onClick={() => selectMethod(item)}>
-                    <span>{item === "email" ? "@" : item === "phone" ? "⌁" : "◇"}</span>
-                    <strong>{item === "email" ? "Email" : item === "phone" ? "Phone" : "Passkey"}</strong>
-                  </button>
-                ))}
-              </div>
-              {method !== "passkey" ? (
-                <label className="field"><span>{method === "email" ? "Email address" : "Phone number"}</span><input value={identifier} onChange={(event) => setIdentifier(event.target.value)} type={method === "email" ? "email" : "tel"} autoComplete={method === "email" ? "email" : "tel"} placeholder={method === "email" ? "you@example.com" : "+234 800 000 0000"} /></label>
-              ) : null}
-              <button type="submit" className="primary">Continue <span aria-hidden="true">→</span></button>
-            </form>
-            <p className="sr-only" role="status">{status}</p>
-          </section>
-        </section>
-
-        <section className="quick-grid" aria-label="ZERO quick actions">
-          <button type="button" onClick={() => chooseNav("New message")}><span>+</span><strong>New message</strong><small>Start privately</small></button>
-          <button type="button" onClick={() => chooseNav("Data Drops")}><span>◇</span><strong>Data Drop</strong><small>Share temporarily</small></button>
-          <button type="button" onClick={() => chooseNav("Devices")}><span>⌁</span><strong>Devices</strong><small>Review trust</small></button>
-        </section>
-
-        <section className="activity-card" aria-label="Privacy-safe activity log">
-          <div><span className="eyebrow">ACTIVITY</span><strong>Local diagnostic trail</strong></div>
-          <ul>{logs.map((entry, index) => <li key={`${entry}-${index}`}>{entry}</li>)}</ul>
-        </section>
-      </section>
-    </main>
-  );
+  <div className="test-notice" role="status"><i/>{notice}</div>
+ </main>
 }
