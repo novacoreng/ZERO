@@ -19,11 +19,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm --dir apps/web build
-      - run: pnpm --dir apps/mobile install --no-frozen-lockfile
-      - run: pnpm --dir apps/mobile typecheck
-      - run: pnpm --dir apps/mobile exec expo export --platform web
-      - run: pnpm security:check
+      - name: Install workspace dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck security core
+        run: pnpm typecheck
+      - name: Run security-core tests
+        run: pnpm test
+      - name: Typecheck web
+        run: pnpm --dir apps/web typecheck
+      - name: Build Next.js web
+        run: pnpm --dir apps/web build
+      - name: Typecheck Expo mobile
+        run: pnpm --dir apps/mobile typecheck
+      - name: Bundle Expo Android test artifact
+        run: pnpm --dir apps/mobile bundle:test
+      - name: Repository security scan
+        run: pnpm security:check
