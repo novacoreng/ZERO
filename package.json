@@ -5,19 +5,22 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test",
+    "test": "tsx --test packages/security-core/test/*.test.ts && pnpm --dir services/api test",
     "security:check": "node scripts/security-check.mjs",
     "web:dev": "npm run dev --prefix apps/web",
     "web:build": "npm run build --prefix apps/web",
     "mobile:go": "npm run start:go --prefix apps/mobile",
     "mobile:typecheck": "npm run typecheck --prefix apps/mobile",
-    "mobile:bundle:test": "npm run bundle:test --prefix apps/mobile"
+    "mobile:bundle:test": "npm run bundle:test --prefix apps/mobile",
+    "desktop:dev": "npm run dev --prefix apps/desktop",
+    "desktop:pack:win": "npm run dist:win --prefix apps/desktop"
   },
   "dependencies": {
     "next": "^16.0.0"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.6"
   }
 }
