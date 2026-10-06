@@ -40,18 +40,18 @@ export const PRODUCTION_LAUNCH_POLICY = Object.freeze({
   noLaunchClaimWithoutEvidence: true,
 });
 
-export function validateReleaseSha(value: string): boolean {
+export function validateLaunchReleaseSha(value: string): boolean {
   return /^[a-f0-9]{40,64}$/.test(value);
 }
 
-export function validateArtifactDigest(value: string): boolean {
+export function validateLaunchArtifactDigest(value: string): boolean {
   return /^sha256:[a-f0-9]{64}$/.test(value);
 }
 
 export function hasCompleteLaunchEvidence(evidence: LaunchEvidence): boolean {
   return (
-    validateReleaseSha(evidence.releaseSha) &&
-    validateArtifactDigest(evidence.artifactDigest) &&
+    validateLaunchReleaseSha(evidence.releaseSha) &&
+    validateLaunchArtifactDigest(evidence.artifactDigest) &&
     evidence.independentCryptoAuditCompleted &&
     evidence.externalPenetrationTestCompleted &&
     evidence.securityFindingsResolved &&
@@ -100,7 +100,7 @@ export function missingLaunchEvidence(evidence: LaunchEvidence): string[] {
     ["releaseArtifactVerified", evidence.releaseArtifactVerified],
   ];
   for (const [name, passed] of checks) if (!passed) missing.push(name);
-  if (!validateReleaseSha(evidence.releaseSha)) missing.push("validReleaseSha");
-  if (!validateArtifactDigest(evidence.artifactDigest)) missing.push("validArtifactDigest");
+  if (!validateLaunchReleaseSha(evidence.releaseSha)) missing.push("validReleaseSha");
+  if (!validateLaunchArtifactDigest(evidence.artifactDigest)) missing.push("validArtifactDigest");
   return missing;
 }
