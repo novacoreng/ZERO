@@ -1,12 +1,17 @@
 {
   "name": "zero-platform",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test",
-    "security:check": "node scripts/security-check.mjs"
+    "security:check": "node scripts/security-check.mjs",
+    "web:dev": "npm run dev --prefix apps/web",
+    "web:build": "npm run build --prefix apps/web",
+    "mobile:go": "npm run start:go --prefix apps/mobile",
+    "mobile:typecheck": "npm run typecheck --prefix apps/mobile",
+    "mobile:bundle:test": "npm run bundle:test --prefix apps/mobile"
   },
   "dependencies": {
     "next": "^16.0.0"
