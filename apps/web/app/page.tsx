@@ -1,34 +1,36 @@
 "use client";
 import { useState } from "react";
-import { AlertCircle, ArrowRight, LockKeyhole, RefreshCw, ShieldCheck } from "lucide-react";
+import { MessageCircle, Search, Settings, SquarePen, ShieldCheck, WifiOff, RefreshCw } from "lucide-react";
 
-export default function Home() {
-  const [checking,setChecking]=useState(false);
-  const [status,setStatus]=useState<"unconfigured"|"unavailable">("unconfigured");
+export default function Home(){
+ const [query,setQuery]=useState("");
+ const [checking,setChecking]=useState(false);
+ const [status,setStatus]=useState("Messaging is not connected");
+ const [settings,setSettings]=useState(false);
+ async function check(){
   const api=process.env.NEXT_PUBLIC_ZERO_API_URL;
-  async function checkConnection(){
-    if(!api){setStatus("unconfigured");return;}
-    setChecking(true);
-    try {
-      const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),6000);
-      try {
-        const response=await fetch(new URL("/health",api).toString(),{signal:controller.signal,cache:"no-store"});
-        setStatus(response.ok?"unconfigured":"unavailable");
-      } finally {clearTimeout(timeout);}
-    } catch {setStatus("unavailable");}
-    finally {setChecking(false);}
-  }
-  return <main className="zero-gate">
-    <section className="zero-gate-card">
-      <div className="zero-gate-brand"><img src="/zero-mark.svg" alt="ZERO logo"/><div><strong>ZERO</strong><small>PIN. PRIVATE. TEMPORARY. GONE.</small></div></div>
-      <div className="zero-gate-icon"><LockKeyhole size={28}/></div>
-      <p className="zero-gate-kicker"><ShieldCheck size={15}/> SECURE MESSAGING</p>
-      <h1>Your privacy deserves a real connection.</h1>
-      <p className="zero-gate-copy">ZERO messaging is not yet available on this deployment. We have removed simulated conversations, fabricated delivery indicators and local-only messages. Sign-in and messaging will open after the authenticated, encrypted service is connected and verified.</p>
-      <div className="zero-gate-warning" role="status"><AlertCircle size={20}/><span>{status==="unavailable"?"The service could not be reached.":"Account and encrypted messaging services are not configured for verified use."}</span></div>
-      <button type="button" className="zero-gate-check" disabled={checking} onClick={checkConnection}><RefreshCw size={17}/>{checking?"Checking connection...":"Check service connection"}<ArrowRight size={16}/></button>
-      <p className="zero-gate-note">A health response alone does not prove that authentication or end-to-end encryption is operational.</p>
-    </section>
-  </main>;
+  if(!api){setStatus("Messaging service is not configured");return;}
+  setChecking(true);
+  try{
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),6000);
+   try{
+    const response=await fetch(new URL("/health",api).toString(),{signal:controller.signal,cache:"no-store"});
+    setStatus(response.ok?"Server reachable. Secure sign-in and messaging are not connected.":"Messaging service unavailable");
+   }finally{clearTimeout(timer);}
+  }catch{setStatus("Messaging service unavailable");}
+  finally{setChecking(false);}
+ }
+ return <main className="messenger">
+  <aside className="chat-sidebar">
+   <header className="sidebar-header"><img src="/zero-mark.svg" alt="ZERO"/><strong>ZERO</strong><button type="button" title="Settings" aria-label="Settings" onClick={()=>setSettings(v=>!v)}><Settings size={20}/></button></header>
+   <div className="sidebar-title"><h1>Chats</h1><button type="button" aria-label="Start new chat" title="Start new chat" onClick={()=>setStatus("Sign-in and messaging must be connected before starting a chat")}><SquarePen size={20}/></button></div>
+   <label className="chat-search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search chats" aria-label="Search chats"/></label>
+   {settings?<section className="sidebar-settings"><h2>Settings</h2><p>Account settings will be available after secure sign-in is connected.</p><button type="button" onClick={()=>setSettings(false)}>Back to chats</button></section>:<div className="sidebar-empty"><MessageCircle size={27}/><p>{query?"No matching conversations":"No conversations yet"}</p><small>{query?"Try another search.":"Your chats will appear here after you sign in."}</small></div>}
+   <footer className="sidebar-status"><span className="status-dot"/> {status}</footer>
+  </aside>
+  <section className="chat-main"><div className="chat-top"><span><ShieldCheck size={17}/> Private messaging</span><span>ZERO</span></div>
+   <div className="chat-welcome"><div className="welcome-icon"><MessageCircle size={32}/></div><h2>Welcome to ZERO</h2><p>A simple, private place for conversations. Your messages will appear here once your account and secure messaging service are connected.</p><div className="connection-note"><WifiOff size={17}/><span>{status}</span></div><button type="button" onClick={check} disabled={checking}><RefreshCw size={16}/>{checking?"Checking...":"Check connection"}</button><small>A server health check does not verify encrypted messaging.</small></div>
+  </section>
+ </main>;
 }
