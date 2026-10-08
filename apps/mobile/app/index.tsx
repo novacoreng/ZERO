@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 export default function Home(){
@@ -19,7 +19,7 @@ export default function Home(){
    }catch{setMessage("The service is unavailable.");}
    finally{setChecking(false);}
  }
- return <SafeAreaView style={s.root}><StatusBar style="light"/><View style={s.card}>
+ return <SafeAreaView style={s.root}><StatusBar style="light"/><ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"><View style={s.card}>
    <View style={s.brand}><View style={s.mark}><Text style={s.markText}>Z</Text></View><View><Text style={s.name}>ZERO</Text><Text style={s.tag}>PIN. PRIVATE. TEMPORARY. GONE.</Text></View></View>
    <View style={s.lock}><Text style={s.lockText}>PRIVATE MESSAGING</Text></View>
    <Text style={s.title}>Your privacy deserves a real connection.</Text>
@@ -27,10 +27,10 @@ export default function Home(){
    <View style={s.warning}><Text style={s.warningText}>{message}</Text></View>
    <Pressable accessibilityRole="button" disabled={checking} onPress={check} style={s.button}>{checking?<ActivityIndicator color="#1b080e"/>:<Text style={s.buttonText}>Check service connection</Text>}</Pressable>
    <Text style={s.note}>A service health check does not verify end-to-end encryption or account security.</Text>
- </View></SafeAreaView>
+ </View></ScrollView></SafeAreaView>
 }
 const s=StyleSheet.create({
- root:{flex:1,justifyContent:"center",padding:20,backgroundColor:"#090607"},
+ root:{flex:1,backgroundColor:"#090607"},scroll:{flexGrow:1,justifyContent:"center",padding:20},
  card:{padding:24,borderWidth:1,borderColor:"#5c2230",borderRadius:24,backgroundColor:"#1b0d13"},
  brand:{flexDirection:"row",alignItems:"center",gap:12},mark:{width:48,height:48,borderRadius:24,borderWidth:3,borderColor:"#ff4359",alignItems:"center",justifyContent:"center"},markText:{fontSize:20,fontWeight:"900",color:"#ff4359"},name:{color:"#fff",fontSize:24,fontWeight:"900",letterSpacing:4},tag:{color:"#bba6ae",fontSize:8,letterSpacing:1},
  lock:{marginTop:42,alignSelf:"flex-start",padding:10,borderRadius:10,backgroundColor:"#401623"},lockText:{color:"#ff8897",fontSize:10,fontWeight:"900",letterSpacing:1},
