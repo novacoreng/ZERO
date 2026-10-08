@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowUp, BellOff, Clock3, FileText, FolderOpen, Link2, MessageCirclePlus, MoreHorizontal, Paperclip, Phone, Search, Settings, Shield, Trash2, Users, Video, X } from "lucide-react";
 
 type Chat = { id:string; name:string; pin:string; preview:string; time:string; unread:number; online:boolean; kind:"direct"|"group" };
 type Message = { id:string; chatId:string; text:string; time:string; mine:boolean; ttl:string; state:"sent"|"read" };
@@ -28,53 +29,63 @@ export default function Home(){
  const [ttl,setTtl]=useState("24h");
  const [notice,setNotice]=useState("TEST MODE · local conversation data");
  const [mobileList,setMobileList]=useState(true);
+ const [filter,setFilter]=useState<"all"|"unread"|"groups">("all");
+ const [muted,setMuted]=useState<string[]>([]);
+ const [detailsOpen,setDetailsOpen]=useState(true);
+ const [panel,setPanel]=useState<string|null>(null);
+ const fileInput=useRef<HTMLInputElement>(null);
  const active=chats.find(c=>c.id===activeId)??chats[0];
- const visible=useMemo(()=>chats.filter(c=>(c.name+" "+c.pin+" "+c.preview).toLowerCase().includes(query.toLowerCase())),[chats,query]);
+ const visible=useMemo(()=>chats.filter(c=>(filter==="all"||filter==="unread"&&c.unread>0||filter==="groups"&&c.kind==="group")&&(c.name+" "+c.pin+" "+c.preview).toLowerCase().includes(query.toLowerCase())),[chats,query,filter]);
  const thread=messages.filter(m=>m.chatId===activeId);
  function selectChat(id:string){setActiveId(id);setMobileList(false);setChats(list=>list.map(c=>c.id===id?{...c,unread:0}:c));}
  function send(e:FormEvent){e.preventDefault();const text=draft.trim();if(!text)return;const now=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"}).format(new Date());setMessages(list=>[...list,{id:crypto.randomUUID(),chatId:activeId,text,time:now,mine:true,ttl,state:"sent"}]);setChats(list=>list.map(c=>c.id===activeId?{...c,preview:text,time:now}:c));setDraft("");setNotice("Message queued in local test mode. Network E2EE transport is not connected.");}
- function action(label:string){setNotice(label+" test boundary reached.");}
+ function action(label:string){setPanel(label);setNotice(label+" is not connected to a provider in this test build.");}
+ function newChat(){setPanel("New chat");}
+ function addDemoChat(){const id=crypto.randomUUID();setChats(list=>[{id,name:"Local test chat",pin:"TEST-ONLY",preview:"No messages yet",time:"Now",unread:0,online:false,kind:"direct"},...list]);setActiveId(id);setMobileList(false);setPanel(null);setNotice("Local test chat created. Not synchronized.");}
+ function attach(files:FileList|null){if(!files?.length)return;setNotice(`${files.length} file(s) selected locally. Encrypted upload is not connected.`);}
+ function shred(){setMessages(list=>list.filter(m=>m.chatId!==activeId));setChats(list=>list.map(chat=>chat.id===activeId?{...chat,preview:"Conversation cleared locally"}:chat));setPanel(null);setNotice("Local test messages cleared. No server-side key destruction occurred.");}
  return <main className="zero-shell">
   <aside className={mobileList?"rail mobile-show":"rail"}>
-   <div className="brand"><img src="/zero-mark.svg" alt=""/><div><strong>ZERO</strong><small>PRIVATE · TEMPORARY</small></div><button onClick={()=>action("New chat")} aria-label="New chat">＋</button></div>
-   <label className="search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search chats, PINs, files"/></label>
-   <div className="filters"><button className="active">All</button><button onClick={()=>action("Unread filter")}>Unread</button><button onClick={()=>action("Groups filter")}>Groups</button></div>
+   <div className="brand"><img src="/zero-mark.svg" alt=""/><div><strong>ZERO</strong><small>PRIVATE · TEMPORARY</small></div><button onClick={newChat} aria-label="New chat"><MessageCirclePlus size={19}/></button></div>
+   <label className="search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search chats, PINs, files"/></label>
+   <div className="filters"><button className={filter==="all"?"active":""} onClick={()=>setFilter("all")}>All</button><button className={filter==="unread"?"active":""} onClick={()=>setFilter("unread")}>Unread</button><button className={filter==="groups"?"active":""} onClick={()=>setFilter("groups")}>Groups</button></div>
    <div className="chat-list">{visible.map(chat=><button key={chat.id} className={activeId===chat.id?"chat-row active":"chat-row"} onClick={()=>selectChat(chat.id)}>
     <span className="avatar">{chat.name.slice(0,2).toUpperCase()}<i className={chat.online?"online":""}/></span>
     <span className="chat-copy"><span><strong>{chat.name}</strong><time>{chat.time}</time></span><span><small>{chat.preview}</small>{chat.unread?<b>{chat.unread}</b>:null}</span></span>
    </button>)}</div>
-   <div className="rail-foot"><button onClick={()=>action("Data Drops")}>◇ Data Drops</button><button onClick={()=>action("Settings")}>⚙ Settings</button></div>
+   <div className="rail-foot"><button onClick={()=>action("Data Drops")}><FolderOpen size={15}/> Data Drops</button><button onClick={()=>action("Settings")}><Settings size={15}/> Settings</button></div>
   </aside>
 
   <section className={mobileList?"conversation mobile-hide":"conversation"}>
    <header className="conversation-head">
-    <button className="back" onClick={()=>setMobileList(true)} aria-label="Back to chats">‹</button>
+    <button className="back" onClick={()=>setMobileList(true)} aria-label="Back to chats"><ArrowLeft size={19}/></button>
     <span className="avatar large">{active.name.slice(0,2).toUpperCase()}<i className={active.online?"online":""}/></span>
     <div className="person"><strong>{active.name}</strong><small>{active.online?"online now":active.pin+" · private"}</small></div>
-    <div className="head-actions"><button onClick={()=>action("Encrypted voice call")} aria-label="Voice call">⌕</button><button onClick={()=>action("Encrypted video call")} aria-label="Video call">▻</button><button onClick={()=>action("Conversation details")} aria-label="Conversation details">•••</button></div>
+    <div className="head-actions"><button onClick={()=>action("Encrypted voice call")} aria-label="Voice call"><Phone size={18}/></button><button onClick={()=>action("Encrypted video call")} aria-label="Video call"><Video size={18}/></button><button onClick={()=>setDetailsOpen(v=>!v)} aria-label="Conversation details"><MoreHorizontal size={18}/></button></div>
    </header>
-   <div className="security-strip"><span>✦ End-to-end encryption boundary</span><span>Messages expire by policy</span></div>
+   <div className="security-strip"><span><Shield size={12}/> Encryption transport not connected (test mode)</span><span>Expiry policy is a UI preview</span></div>
    <div className="thread">
     <div className="day">TODAY</div>
     {thread.map(m=><article key={m.id} className={m.mine?"bubble mine":"bubble"}>
-      <p>{m.text}</p><footer><span>⌛ {m.ttl}</span><time>{m.time}</time>{m.mine?<span>{m.state==="read"?"✓✓":"✓"}</span>:null}</footer>
+      <p>{m.text}</p><footer><span><Clock3 size={11}/> {m.ttl}</span><time>{m.time}</time>{m.mine?<span>{m.state==="read"?"✓✓":"✓"}</span>:null}</footer>
     </article>)}
    </div>
    <form className="composer" onSubmit={send}>
-    <button type="button" onClick={()=>action("Attachment picker")} aria-label="Attach file">＋</button>
-    <input value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Message privately" aria-label="Message"/>
+    <button type="button" onClick={()=>fileInput.current?.click()} aria-label="Attach file"><Paperclip size={19}/></button>
+    <input ref={fileInput} type="file" hidden multiple onChange={e=>attach(e.target.files)}/><input value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Message privately" aria-label="Message"/>
     <select value={ttl} onChange={e=>setTtl(e.target.value)} aria-label="Message expiry"><option>10s</option><option>1h</option><option>24h</option><option>7d</option></select>
-    <button className="send" aria-label="Send message">↑</button>
+    <button className="send" aria-label="Send message" disabled={!draft.trim()}><ArrowUp size={20}/></button>
    </form>
   </section>
 
-  <aside className="details">
+  {detailsOpen&&<aside className="details">
    <div className="profile-orb">{active.name.slice(0,2).toUpperCase()}</div><h2>{active.name}</h2><p>{active.pin}</p>
-   <div className="detail-actions"><button onClick={()=>action("Search in conversation")}>⌕<span>Search</span></button><button onClick={()=>action("Mute")}>◌<span>Mute</span></button><button onClick={()=>action("Secure Share")}>◇<span>Drop</span></button></div>
+   <div className="detail-actions"><button onClick={()=>{setQuery(active.name);setMobileList(true)}}><Search size={19}/><span>Search</span></button><button onClick={()=>setMuted(list=>list.includes(activeId)?list.filter(id=>id!==activeId):[...list,activeId])}><BellOff size={19}/><span>{muted.includes(activeId)?"Unmute":"Mute"}</span></button><button onClick={()=>action("Secure Share")}><FolderOpen size={19}/><span>Drop</span></button></div>
    <section><small>PRIVACY</small><div><span>Message expiry</span><strong>{ttl}</strong></div><div><span>Forwarding</span><strong>Off</strong></div><div><span>Read receipts</span><strong>On</strong></div></section>
-   <section><small>SHARED</small><button onClick={()=>action("Shared media")}>▧ Media and files <span>12</span></button><button onClick={()=>action("Secure links")}>⌁ Secure links <span>4</span></button></section>
-   <button className="danger" onClick={()=>action("Cryptographic Shred")}>✦ Cryptographic Shred</button>
-  </aside>
+   <section><small>SHARED</small><button onClick={()=>action("Shared media")}><FileText size={16}/> Media and files <span>12</span></button><button onClick={()=>action("Secure links")}><Link2 size={16}/> Secure links <span>4</span></button></section>
+   <button className="danger" onClick={()=>setPanel("Clear local messages")}><Trash2 size={16}/> Clear local test messages</button>
+  </aside>}
+  {panel&&<div className="zero-modal-backdrop" onClick={()=>setPanel(null)}><section className="zero-modal" role="dialog" aria-modal="true" aria-label={panel} onClick={e=>e.stopPropagation()}><button className="zero-modal-close" aria-label="Close dialog" onClick={()=>setPanel(null)}><X size={20}/></button><h2>{panel}</h2><p>{panel==="Clear local messages"?"This clears only locally displayed test messages. It does not destroy encryption keys or remote data.":"This feature requires its real service integration. No network action has been performed."}</p>{panel==="New chat"&&<button className="zero-modal-action" onClick={addDemoChat}>Create local test chat</button>}{panel==="Clear local messages"&&<button className="zero-modal-action" onClick={shred}>Clear local messages</button>}</section></div>}
 
   <div className="test-notice" role="status"><i/>{notice}</div>
  </main>
