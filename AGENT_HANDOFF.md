@@ -38,3 +38,31 @@ For every user-facing flow, verify actual behavior rather than visual presence. 
 
 ## Post-roadmap action
 Collect UI/device evidence, execute real security assessments, remediate findings, run release-candidate validation, verify provider integrations and production runtime behavior, and only then make a production deployment decision.
+## Mandatory Full Stack Production App Builder execution contract
+
+Applies to every ZERO feature, bug fix, refactor, deployment and release. Read PROJECT_STATE.md, docs/ZERO-FRONTEND-REDESIGN.md, docs/UI-QUALITY-AUDIT.md and docs/BRAND-LOCK.md before making user-facing changes.
+
+1. AUDIT: inventory affected web/mobile/desktop/API packages, source-of-truth specifications, data flows, credentials, dependencies, existing tests and security boundaries. Record known failures.
+2. BUILD: make minimal cohesive changes across shared contracts, API, UI, tests, accessibility and documentation. Do not replace canonical brand assets or invent product behavior.
+3. TEST: run root typecheck and tests, web typecheck/build, Expo typecheck/Android export, security scan and Windows installer workflow where affected. Do not skip failing gates.
+4. VERIFY: test actual user interactions, empty/loading/error/offline states, desktop/tablet/phone layouts, keyboard and screen reader, message lifecycle, and provider integrations where available. Build success alone is insufficient.
+5. FIX AND RE-TEST: trace failures to root cause; never weaken validation, remove a test, or hide an error to obtain a green pipeline. Repeat the failed gate and dependent checks.
+6. UI QUALITY GATE: compare against the locked ZERO identity and NOVA UI/UX direction. Confirm responsive navigation, touch target size, readable contrast, reduced motion, proper focus and working controls.
+7. SECURITY GATE: prove server cannot read plaintext, secrets are not bundled or logged, sessions/devices are validated, input/output are validated, expirations and cryptographic key lifecycle are implemented, and independent audit evidence exists before security claims.
+8. LOCK: only mark a phase complete after the relevant CI jobs and real device/runtime evidence are linked in the handoff. Commit with precise scope and update PROJECT_STATE.md.
+
+### Platform gates
+- Web: Vercel Next.js production build, browser runtime smoke test and deployed URL verification.
+- Expo: Expo Go compatibility, Android bundle, real Android/iOS device behavior and permission checks. Native-only features require development builds and must not be labelled Expo Go-compatible without evidence.
+- Windows: GitHub Actions Windows NSIS artifact, installation, startup, window/navigation security, code-signing posture and update path. A wrapper loading the web URL is not an independently functioning offline messenger.
+- Backend: real OTP/passkey providers, authenticated API, persistence, encrypted messaging transport, files, notifications, calls and cross-device sync must each have integration evidence.
+- No simulated conversation, unread count, online status, delivery receipt, or message-expiry label may be mistaken for real account data.
+
+### Current known blockers
+- UI messaging clients still use local demo conversation data.
+- Realtime encrypted transport and authentication provider connections are not verified.
+- Vercel authorization and actual deployment runtime verification remain unresolved.
+- Windows installer build and installation verification require retained CI and device evidence.
+- Independent security assessment, cryptographic audit and production operations evidence remain outstanding.
+
+Never equate architectural readiness with production readiness.
