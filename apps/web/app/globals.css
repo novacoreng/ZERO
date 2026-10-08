@@ -25,3 +25,15 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .zero-modal-action{padding:12px 16px;border:0;border-radius:12px;background:#ff4359;color:#1b080e;font-weight:800}
 .filters button.active{color:#ff8898;background:#36121d}
 .security-strip span,.rail-foot button,.detail-actions button,.danger{display:flex;align-items:center;justify-content:center;gap:7px}
+
+.zero-gate{min-height:100vh;overflow:auto;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 75% 10%,rgba(255,67,89,.2),transparent 48%),linear-gradient(145deg,#080608,#200c14,#080608)}
+.zero-gate-card{width:min(650px,100%);padding:clamp(24px,5vw,54px);border:1px solid rgba(255,67,89,.22);border-radius:28px;background:linear-gradient(150deg,#251119,#11090d);box-shadow:0 25px 100px rgba(0,0,0,.5)}
+.zero-gate-brand{display:flex;align-items:center;gap:15px}.zero-gate-brand img{width:52px;height:52px}.zero-gate-brand div{display:grid;gap:5px}.zero-gate-brand strong{font-size:24px;letter-spacing:.18em}.zero-gate-brand small{color:#c3aab2;font-size:10px;letter-spacing:.08em}
+.zero-gate-icon{width:60px;height:60px;margin-top:48px;display:grid;place-items:center;border:1px solid rgba(255,67,89,.3);border-radius:18px;background:rgba(255,67,89,.1);color:#ff6378}
+.zero-gate-kicker{display:flex;align-items:center;gap:8px;margin-top:24px;color:#ff8897;font-size:11px;font-weight:800;letter-spacing:.1em}
+.zero-gate h1{max-width:520px;font-size:clamp(32px,5vw,48px);line-height:1.13;letter-spacing:-.035em}
+.zero-gate-copy{font-size:15px;line-height:1.7;color:#c6b6bc}
+.zero-gate-warning{display:flex;align-items:flex-start;gap:12px;padding:16px;margin-top:26px;border:1px solid rgba(255,67,89,.2);border-radius:14px;color:#e3b5be;background:rgba(255,67,89,.07);font-size:13px;line-height:1.5}
+.zero-gate-warning svg{flex-shrink:0}
+.zero-gate-check{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;margin-top:20px;border:0;border-radius:14px;background:linear-gradient(135deg,#ff6175,#df2948);color:#19070c;font-weight:900}
+.zero-gate-check:disabled{opacity:.6}.zero-gate-note{font-size:11px;line-height:1.5;color:#a8919a;margin-top:18px}
