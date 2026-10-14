@@ -1,2 +1,6 @@
-const { contextBridge } = require("electron");
-contextBridge.exposeInMainWorld("ZERO_DESKTOP",{platform:process.platform,testBuild:true});
+"use strict";
+const {contextBridge,ipcRenderer}=require("electron");
+contextBridge.exposeInMainWorld("ZERO_DESKTOP",Object.freeze({
+ platform:process.platform,
+ getIdentity:()=>ipcRenderer.invoke("zero:identity")
+}));
