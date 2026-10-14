@@ -1,6 +1,37 @@
 {
-  "name":"@zero/desktop","private":true,"version":"0.1.0","description":"ZERO Windows testing shell","main":"main.cjs",
-  "scripts":{"dev":"electron .","dist:win":"electron-builder --win nsis --x64"},
-  "devDependencies":{"electron":"^38.2.1","electron-builder":"^26.0.12"},
-  "build":{"appId":"com.novacore.zero","productName":"ZERO","artifactName":"ZERO-Setup-${version}-${arch}.${ext}","files":["main.cjs","preload.cjs","package.json"],"win":{"target":["nsis"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true}}
+  "name": "@zero/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ZERO device-identity desktop messenger foundation",
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "electron .",
+    "dist:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.novacore.zero",
+    "productName": "ZERO",
+    "artifactName": "ZERO-Setup-${version}-${arch}.${ext}",
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "device-identity.cjs",
+      "index.html",
+      "renderer.js",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
 }
