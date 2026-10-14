@@ -23,7 +23,10 @@ jobs:
       - name: Install desktop dependencies
         working-directory: apps/desktop
         run: npm install
-      - name: Test desktop device identity\n        working-directory: apps/desktop\n        run: npm test\n      - name: Build Windows NSIS installer
+      - name: Test desktop device identity
+        working-directory: apps/desktop
+        run: npm test
+      - name: Build Windows NSIS installer
         working-directory: apps/desktop
         run: npm run dist:win
       - name: Upload Windows test installer
