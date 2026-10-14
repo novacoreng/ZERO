@@ -1,7 +1,7 @@
 "use strict";
 const {app,BrowserWindow,ipcMain,safeStorage}=require("electron");
 const path=require("node:path");
-const {loadOrCreateIdentity}=require("./device-identity.cjs");
+const {loadOrCreateIdentity,signChallenge}=require("./device-identity.cjs");
 let identity=null;
 let activationError=null;
 function createWindow(){
@@ -18,6 +18,34 @@ app.whenReady().then(()=>{
  ipcMain.handle("zero:identity",()=>{
   if(!identity)return {activated:false,error:activationError||"Device identity unavailable"};
   return {activated:true,pin:identity.pin,publicKey:identity.publicKey};
+ });
+ ipcMain.handle("zero:register",async()=>{
+  if(!identity)return {registered:false,error:"Local device identity unavailable"};
+  const base=process.env.ZERO_REGISTRY_URL;
+  if(!base)return {registered:false,error:"Device registry is not configured"};
+  let url;
+  try{
+   url=new URL(base);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("HTTPS is required");
+   if(url.username||url.password||url.search||url.hash)throw new Error("Invalid registry URL");
+  }catch{return {registered:false,error:"Invalid device registry URL"};}
+  async function post(route,payload){
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const response=await fetch(new URL(route,url),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload),signal:controller.signal});
+    if(!response.ok)throw new Error("Registry request failed");
+    return await response.json();
+   }finally{clearTimeout(timer);}
+  }
+  try{
+   const issued=await post("/v1/devices/challenge",{publicKey:identity.publicKey});
+   if(issued.pin!==identity.pin||typeof issued.challenge!=="string")throw new Error("Registry identity mismatch");
+   const signature=signChallenge(identity,issued.challenge);
+   const result=await post("/v1/devices/register",{publicKey:identity.publicKey,challenge:issued.challenge,signature});
+   if(result.pin!==identity.pin||result.registered!==true)throw new Error("Registry response mismatch");
+   return {registered:true,pin:identity.pin};
+  }catch{return {registered:false,error:"Device registration failed. Check the registry connection."};}
  });
  createWindow();
  app.on("activate",()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});
