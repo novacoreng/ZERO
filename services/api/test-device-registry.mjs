@@ -22,4 +22,16 @@ assert.throws(()=>registry.register({publicKey:keys.publicKey,challenge:third.ch
 const expired=registry.challenge(other.publicKey);
 now+=61_000;
 assert.throws(()=>registry.register({publicKey:other.publicKey,challenge:expired.challenge,signature:crypto.sign(null,Buffer.from(expired.challenge),crypto.createPrivateKey(other.privateKey)).toString("base64url")}));
-console.log("ZERO device registry tests passed");
+const sessionChallenge=registry.challenge(keys.publicKey,"session");
+const sessionSignature=crypto.sign(null,Buffer.from(sessionChallenge.challenge),crypto.createPrivateKey(keys.privateKey)).toString("base64url");
+const session=registry.authenticate({publicKey:keys.publicKey,challenge:sessionChallenge.challenge,signature:sessionSignature});
+assert.equal(session.pin,pin);
+assert.equal(registry.authorize(session.accessToken)?.pin,pin);
+assert.equal(registry.authorize("invalid"),null);
+assert.throws(()=>registry.authenticate({publicKey:keys.publicKey,challenge:sessionChallenge.challenge,signature:sessionSignature}));
+const crossPurpose=registry.challenge(keys.publicKey,"session");
+const crossSignature=crypto.sign(null,Buffer.from(crossPurpose.challenge),crypto.createPrivateKey(keys.privateKey)).toString("base64url");
+assert.throws(()=>registry.register({publicKey:keys.publicKey,challenge:crossPurpose.challenge,signature:crossSignature}));
+now+=901_000;
+assert.equal(registry.authorize(session.accessToken),null);
+console.log("ZERO device registry and session tests passed");
