@@ -14,7 +14,7 @@ export function derivePin(pem){
 }
 export class DeviceRegistry{
  constructor({file,clock=()=>Date.now()}){
-  this.file=file;this.clock=clock;this.challenges=new Map();this.devices=new Map();
+  this.file=file;this.clock=clock;this.challenges=new Map();this.devices=new Map();this.sessions=new Map();
   if(file&&fs.existsSync(file)){
    const data=JSON.parse(fs.readFileSync(file,"utf8"));
    for(const entry of data.devices||[])this.devices.set(entry.pin,entry);
@@ -27,19 +27,20 @@ export class DeviceRegistry{
   try{fs.writeFileSync(temp,JSON.stringify({version:1,devices:[...this.devices.values()]}),{mode:0o600,flag:"wx"});fs.renameSync(temp,this.file);}
   finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}
  }
- challenge(publicKey){
+ challenge(publicKey,purpose="register"){
+  if(!["register","session"].includes(purpose))throw new Error("Invalid challenge purpose");
   if(typeof publicKey!=="string"||publicKey.length>2000)throw new Error("Invalid public key");
   const pin=derivePin(publicKey);
   const nonce="ZERO-AUTH-V1:"+crypto.randomBytes(32).toString("base64url");
   // Challenge is bound to the key, one-time, and expires after 60 seconds.
-  this.challenges.set(nonce,{pin,publicKey,expires:this.clock()+60_000});
+  this.challenges.set(nonce,{pin,publicKey,purpose,expires:this.clock()+60_000});
   if(this.challenges.size>10000)for(const [key,item] of this.challenges)if(item.expires<=this.clock())this.challenges.delete(key);
   return {pin,challenge:nonce,expiresInSeconds:60};
  }
  register({publicKey,challenge,signature}){
   const pending=this.challenges.get(challenge);
   this.challenges.delete(challenge);
-  if(!pending||pending.expires<=this.clock()||pending.publicKey!==publicKey)throw new Error("Invalid or expired challenge");
+  if(!pending||pending.purpose!=="register"||pending.expires<=this.clock()||pending.publicKey!==publicKey)throw new Error("Invalid or expired challenge");
   if(typeof signature!=="string"||!/^[A-Za-z0-9_-]{80,100}$/.test(signature))throw new Error("Invalid signature");
   const verified=crypto.verify(null,Buffer.from(challenge),crypto.createPublicKey(publicKey),Buffer.from(signature,"base64url"));
   if(!verified)throw new Error("Signature verification failed");
@@ -48,6 +49,28 @@ export class DeviceRegistry{
   if(previous?.revoked)throw new Error("Device revoked");
   if(!previous){this.devices.set(pending.pin,{pin:pending.pin,publicKey,createdAt:new Date(this.clock()).toISOString(),revoked:false});this.persist();}
   return {pin:pending.pin,registered:true};
+ }
+ authenticate({publicKey,challenge,signature}){
+  const pending=this.challenges.get(challenge);
+  this.challenges.delete(challenge);
+  if(!pending||pending.purpose!=="session"||pending.expires<=this.clock()||pending.publicKey!==publicKey)throw new Error("Invalid or expired session challenge");
+  const registered=this.devices.get(pending.pin);
+  if(!registered||registered.revoked||registered.publicKey!==publicKey)throw new Error("Device is not registered");
+  if(typeof signature!=="string"||!/^[A-Za-z0-9_-]{80,100}$/.test(signature))throw new Error("Invalid signature");
+  if(!crypto.verify(null,Buffer.from(challenge),crypto.createPublicKey(publicKey),Buffer.from(signature,"base64url")))throw new Error("Signature verification failed");
+  const token=crypto.randomBytes(32).toString("base64url");
+  const digest=crypto.createHash("sha256").update(token).digest("hex");
+  const expires=this.clock()+15*60_000;
+  this.sessions.set(digest,{pin:pending.pin,expires});
+  return {accessToken:token,tokenType:"Bearer",expiresInSeconds:900,pin:pending.pin};
+ }
+ authorize(token){
+  if(typeof token!=="string"||!/^[A-Za-z0-9_-]{43}$/.test(token))return null;
+  const digest=crypto.createHash("sha256").update(token).digest("hex");
+  const session=this.sessions.get(digest);
+  if(!session||session.expires<=this.clock()){this.sessions.delete(digest);return null;}
+  const device=this.devices.get(session.pin);
+  return device&&!device.revoked?{pin:device.pin,publicKey:device.publicKey}:null;
  }
  lookup(pin){
   if(typeof pin!=="string"||!(/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(pin)))return null;
