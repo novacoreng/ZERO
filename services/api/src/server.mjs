@@ -19,12 +19,17 @@ const server=http.createServer(async(req,res)=>{
  const ip=req.socket.remoteAddress||"unknown";
  if(!rateLimit(ip))return json(res,429,{error:"Rate limit exceeded"});
  if(req.method==="GET"&&req.url==="/health")return json(res,200,{status:"ok",service:"zero-device-registry"});
+ if(req.method==="GET"&&req.url==="/v1/session/me"){
+  const auth=req.headers.authorization||"";
+  const device=registry.authorize(auth.startsWith("Bearer ")?auth.slice(7):"");
+  return json(res,device?200:401,device||{error:"Authentication required"});
+ }
  if(req.method==="GET"&&req.url?.startsWith("/v1/devices/")){
   const pin=decodeURIComponent(req.url.slice("/v1/devices/".length));
   const device=registry.lookup(pin);
   return json(res,device?200:404,device||{error:"Device not found"});
  }
- if(req.method!=="POST"||!["/v1/devices/challenge","/v1/devices/register"].includes(req.url))return json(res,404,{error:"Not found"});
+ if(req.method!=="POST"||!["/v1/devices/challenge","/v1/devices/register","/v1/session/challenge","/v1/session/authenticate"].includes(req.url))return json(res,404,{error:"Not found"});
  if(!req.headers["content-type"]?.startsWith("application/json"))return json(res,415,{error:"JSON required"});
  let body="";
  try{
@@ -32,6 +37,8 @@ const server=http.createServer(async(req,res)=>{
   const input=JSON.parse(body);
   if(!input||typeof input!=="object"||Array.isArray(input))throw new Error("Invalid request");
   if(req.url==="/v1/devices/challenge")return json(res,200,registry.challenge(input.publicKey));
+  if(req.url==="/v1/session/challenge")return json(res,200,registry.challenge(input.publicKey,"session"));
+  if(req.url==="/v1/session/authenticate")return json(res,200,registry.authenticate(input));
   return json(res,200,registry.register(input));
  }catch{return json(res,400,{error:"Invalid device registration request"});}
 });
