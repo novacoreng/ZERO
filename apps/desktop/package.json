@@ -6,7 +6,8 @@
   "main": "main.cjs",
   "scripts": {
     "dev": "electron .",
-    "dist:win": "electron-builder --win nsis --x64"
+    "dist:win": "electron-builder --win nsis --x64",
+    "test": "node test-identity.cjs"
   },
   "devDependencies": {
     "electron": "^38.2.1",
