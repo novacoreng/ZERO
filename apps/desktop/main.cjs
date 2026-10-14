@@ -4,6 +4,7 @@ const path=require("node:path");
 const {loadOrCreateIdentity,signChallenge}=require("./device-identity.cjs");
 let identity=null;
 let activationError=null;
+let sessionToken=null;
 function createWindow(){
  const win=new BrowserWindow({width:1050,height:740,minWidth:700,minHeight:520,backgroundColor:"#151216",title:"ZERO",autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,"preload.cjs"),contextIsolation:true,nodeIntegration:false,sandbox:true}});
  win.setMenuBarVisibility(false);
@@ -18,6 +19,32 @@ app.whenReady().then(()=>{
  ipcMain.handle("zero:identity",()=>{
   if(!identity)return {activated:false,error:activationError||"Device identity unavailable"};
   return {activated:true,pin:identity.pin,publicKey:identity.publicKey};
+ });
+ ipcMain.handle("zero:authenticate",async()=>{
+  if(!identity)return {authenticated:false,error:"Device identity unavailable"};
+  const base=process.env.ZERO_REGISTRY_URL;
+  if(!base)return {authenticated:false,error:"Device registry is not configured"};
+  try{
+   const url=new URL(base);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("Secure registry required");
+   if(url.username||url.password||url.search||url.hash)throw new Error("Invalid registry URL");
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    async function post(route,body){
+     const response=await fetch(new URL(route,url),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:controller.signal});
+     if(!response.ok)throw new Error("Authentication failed");
+     return response.json();
+    }
+    const issued=await post("/v1/session/challenge",{publicKey:identity.publicKey});
+    if(issued.pin!==identity.pin)throw new Error("PIN mismatch");
+    const signed=signChallenge(identity,issued.challenge);
+    const result=await post("/v1/session/authenticate",{publicKey:identity.publicKey,challenge:issued.challenge,signature:signed});
+    if(result.pin!==identity.pin||typeof result.accessToken!=="string")throw new Error("Invalid authentication response");
+    sessionToken=result.accessToken;
+    return {authenticated:true,pin:identity.pin,expiresInSeconds:result.expiresInSeconds};
+   }finally{clearTimeout(timer);}
+  }catch{return {authenticated:false,error:"Device authentication failed. Register this PIN first."};}
  });
  ipcMain.handle("zero:register",async()=>{
   if(!identity)return {registered:false,error:"Local device identity unavailable"};
