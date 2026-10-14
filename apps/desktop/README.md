@@ -23,3 +23,8 @@ Windows DPAPI generally binds encrypted key material to the Windows user profile
 PINs are **public addresses, not secret passwords**. No server should authorize access using the PIN alone. The public key must be registered and a fresh cryptographic challenge signed with the private key. Identity should be created on activation, not embedded in downloadable installers. App code signing is separate from device identity.
 
 Uninstall/reinstall behavior depends on whether the user profile data is preserved. If local identity data is erased, the old PIN cannot be recovered without an explicitly designed secure recovery flow. Avoid silent identity resets.
+
+## Device registration prototype
+Run `pnpm --dir services/api dev:registry` with `ZERO_DEVICE_REGISTRY_FILE` pointing to a writable local JSON registry file, then launch the desktop app with `ZERO_REGISTRY_URL=http://127.0.0.1:8787`. Click **Register** after activation. This signs a short-lived server challenge with the local private key; the server stores only the public key and derived PIN. No email or password is involved.
+
+This is a **local development protocol**, not an Internet-ready authentication service. The prototype uses process-local challenge and rate-limit state, a simple JSON registry, no TLS termination, no device session tokens, no authenticated messaging, no device attestation, and no distributed coordination. Public Internet deployment is prohibited until a production database, durable atomic transactions, rate limiting, audit logging, replay-resistant sessions, key revocation, transport security, and independent security testing are implemented. The PIN alone must never authorize messaging.
