@@ -1,0 +1,16 @@
+"use strict";
+const assert=require("node:assert/strict");
+const crypto=require("node:crypto");
+const {fingerprint,signChallenge,verifyChallenge}=require("./device-identity.cjs");
+const first=crypto.generateKeyPairSync("ed25519",{publicKeyEncoding:{type:"spki",format:"pem"},privateKeyEncoding:{type:"pkcs8",format:"pem"}});
+const second=crypto.generateKeyPairSync("ed25519",{publicKeyEncoding:{type:"spki",format:"pem"},privateKeyEncoding:{type:"pkcs8",format:"pem"}});
+assert.equal(fingerprint(first.publicKey),fingerprint(first.publicKey));
+assert.notEqual(fingerprint(first.publicKey),fingerprint(second.publicKey));
+assert.match(fingerprint(first.publicKey),/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/);
+const challenge="ZERO-AUTH-V1:"+crypto.randomBytes(32).toString("base64url");
+const signature=signChallenge({privateKey:first.privateKey},challenge);
+assert.equal(verifyChallenge(first.publicKey,challenge,signature),true);
+assert.equal(verifyChallenge(second.publicKey,challenge,signature),false);
+assert.equal(verifyChallenge(first.publicKey,challenge+"a",signature),false);
+assert.throws(()=>signChallenge({privateKey:first.privateKey},"invalid"));
+console.log("ZERO desktop identity primitive tests passed");
