@@ -31,4 +31,14 @@ function loadOrCreateIdentity(directory,safeStorage){
  try{fs.writeFileSync(fd,JSON.stringify(record));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
  return {pin:fingerprint(keys.publicKey),publicKey:keys.publicKey,privateKey:keys.privateKey};
 }
-module.exports={fingerprint,loadOrCreateIdentity};
+function signChallenge(identity,challenge){
+ if(!identity||typeof identity.privateKey!=="string")throw new Error("Device identity unavailable");
+ if(typeof challenge!=="string"||!/^ZERO-AUTH-V1:[A-Za-z0-9_-]{32,128}$/.test(challenge))throw new Error("Invalid authentication challenge");
+ return crypto.sign(null,Buffer.from(challenge,"utf8"),crypto.createPrivateKey(identity.privateKey)).toString("base64url");
+}
+function verifyChallenge(publicKey,challenge,signature){
+ if(typeof challenge!=="string"||!/^ZERO-AUTH-V1:[A-Za-z0-9_-]{32,128}$/.test(challenge))return false;
+ if(typeof signature!=="string"||!/^[A-Za-z0-9_-]{80,100}$/.test(signature))return false;
+ try{return crypto.verify(null,Buffer.from(challenge,"utf8"),crypto.createPublicKey(publicKey),Buffer.from(signature,"base64url"));}catch{return false;}
+}
+module.exports={fingerprint,loadOrCreateIdentity,signChallenge,verifyChallenge};
