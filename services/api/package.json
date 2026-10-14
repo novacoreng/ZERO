@@ -6,9 +6,12 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "tsc && node test.mjs",
+    "test": "tsc && node test.mjs && node test-device-registry.mjs",
     "lint": "node -e \"console.log('api lint reserved for service implementation phase')\"",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "dev:registry": "node src/server.mjs"
   },
-  "devDependencies": { "typescript": "^5.9.0" }
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
 }
