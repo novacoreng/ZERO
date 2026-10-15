@@ -1,0 +1,17 @@
+"use strict";
+const assert=require("node:assert/strict");
+const crypto=require("node:crypto");
+const {fingerprint}=require("./device-identity.cjs");
+const {generateEncryptionKeys}=require("./secure-envelope.cjs");
+const {createSignedMessage,openSignedMessage}=require("./signed-message.cjs");
+const alice=crypto.generateKeyPairSync("ed25519",{publicKeyEncoding:{type:"spki",format:"pem"},privateKeyEncoding:{type:"pkcs8",format:"pem"}});
+const bob=generateEncryptionKeys();
+const identity={...alice,pin:fingerprint(alice.publicKey)};
+const recipient="ABCD-EFGH-JKLM-NPQR";
+const envelope=createSignedMessage({identity,recipient,recipientPublicKey:bob.publicKey,plaintext:"Test authenticated message"});
+assert.equal(openSignedMessage({sender:identity.pin,recipient,identityPublicKey:identity.publicKey,recipientPrivateKey:bob.privateKey,envelope}),"Test authenticated message");
+assert.throws(()=>openSignedMessage({sender:recipient,recipient,identityPublicKey:identity.publicKey,recipientPrivateKey:bob.privateKey,envelope}));
+assert.throws(()=>openSignedMessage({sender:identity.pin,recipient:"STUV-WXYZ-2345-6789",identityPublicKey:identity.publicKey,recipientPrivateKey:bob.privateKey,envelope}));
+assert.throws(()=>openSignedMessage({sender:identity.pin,recipient,identityPublicKey:identity.publicKey,recipientPrivateKey:bob.privateKey,envelope:{...envelope,ciphertext:envelope.ciphertext.slice(0,-2)+"AA"}}));
+assert.throws(()=>openSignedMessage({sender:identity.pin,recipient,identityPublicKey:identity.publicKey,recipientPrivateKey:bob.privateKey,envelope:{...envelope,signature:"A".repeat(86)}}));
+console.log("ZERO signed encrypted-message tests passed");
