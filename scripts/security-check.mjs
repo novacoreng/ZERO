@@ -24,7 +24,7 @@ function walk(dir) {
 
 const violations = [];
 for (const file of walk(".")) {
-  const normalized = file.replaceAll("\\\\", "/");
+  const normalized = file.replaceAll("\\", "/");
   if (forbiddenNames.test(normalized)) violations.push(`forbidden secret-like file: ${normalized}`);
   const ext = normalized.includes(".") ? "." + normalized.split(".").pop() : "";
   if (!textExtensions.has(ext)) continue;
@@ -38,7 +38,7 @@ for (const file of walk(".")) {
 }
 
 if (violations.length) {
-  console.error(violations.join("\\n"));
+  console.error(violations.join("\n"));
   process.exit(1);
 }
 
