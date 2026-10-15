@@ -1,8 +1,10 @@
 "use strict";
 const {app,BrowserWindow,ipcMain,safeStorage}=require("electron");
 const path=require("node:path");
+const {loadOrCreateEncryptionIdentity,verifyPublishedKey}=require("./encryption-identity.cjs");
 const {loadOrCreateIdentity,signChallenge}=require("./device-identity.cjs");
 let identity=null;
+let encryptionIdentity=null;
 let activationError=null;
 let sessionToken=null;
 function createWindow(){
@@ -15,6 +17,7 @@ function createWindow(){
 app.whenReady().then(()=>{
  try{
   identity=loadOrCreateIdentity(path.join(app.getPath("userData"),"secure"),safeStorage);
+  encryptionIdentity=loadOrCreateEncryptionIdentity(path.join(app.getPath("userData"),"secure"),safeStorage,identity);
  }catch(error){activationError=error instanceof Error?error.message:"Device activation failed";}
  ipcMain.handle("zero:identity",()=>{
   if(!identity)return {activated:false,error:activationError||"Device identity unavailable"};
@@ -46,6 +49,26 @@ app.whenReady().then(()=>{
    }finally{clearTimeout(timer);}
   }catch{return {authenticated:false,error:"Device authentication failed. Register this PIN first."};}
  });
+ ipcMain.handle("zero:publish-encryption-key",async()=>{
+  if(!identity||!encryptionIdentity||!sessionToken)return {published:false,error:"Connect your device first"};
+  const base=process.env.ZERO_REGISTRY_URL;
+  if(!base)return {published:false,error:"Registry not configured"};
+  try{
+   const url=new URL(base);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("Invalid protocol");
+   if(url.username||url.password||url.search||url.hash)throw new Error("Invalid URL");
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const response=await fetch(new URL("/v1/encryption-keys/publish",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({publicKey:encryptionIdentity.publicKey,signature:encryptionIdentity.signature}),signal:controller.signal});
+    if(response.status===401){sessionToken=null;return {published:false,error:"Session expired"};}
+    if(!response.ok)throw new Error("Publication failed");
+    const result=await response.json();
+    if(result.pin!==identity.pin||result.published!==true)throw new Error("Invalid response");
+    return {published:true,pin:identity.pin};
+   }finally{clearTimeout(timer);}
+  }catch{return {published:false,error:"Encryption key publication failed"};}
+ });
  ipcMain.handle("zero:lookup-contact",async(_event,requestedPin)=>{
   if(!identity||!sessionToken)return {found:false,error:"Connect your device first"};
   if(typeof requestedPin!=="string"||!(/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(requestedPin)))return {found:false,error:"Enter a valid ZERO PIN"};
@@ -65,7 +88,12 @@ app.whenReady().then(()=>{
     const device=await response.json();
     const {fingerprint}=require("./device-identity.cjs");
     if(device.pin!==requestedPin||typeof device.publicKey!=="string"||fingerprint(device.publicKey)!==requestedPin)throw new Error("Contact identity mismatch");
-    return {found:true,pin:requestedPin,publicKey:device.publicKey};
+    const keyResponse=await fetch(new URL("/v1/encryption-keys/"+encodeURIComponent(requestedPin),url),{signal:controller.signal});
+    if(keyResponse.status===404)return {found:true,pin:requestedPin,publicKey:device.publicKey,encryptionReady:false};
+    if(!keyResponse.ok)throw new Error("Key lookup failed");
+    const keyRecord=await keyResponse.json();
+    if(keyRecord.identityPublicKey!==device.publicKey||!verifyPublishedKey(requestedPin,keyRecord))throw new Error("Invalid encryption key signature");
+    return {found:true,pin:requestedPin,publicKey:device.publicKey,encryptionReady:true};
    }finally{clearTimeout(timer);}
   }catch{return {found:false,error:"Contact verification failed"};}
  });
