@@ -22,6 +22,32 @@
  const copy=document.getElementById("copy");
  const register=document.getElementById("register");
  const authenticate=document.getElementById("authenticate");
+ const refresh=document.getElementById("refresh-inbox");
+ const inbox=document.getElementById("inbox-list");
+ async function refreshInbox(){
+  refresh.disabled=true;
+  try{
+   const result=await window.ZERO_DESKTOP.getInbox();
+   if(!result.connected){status.textContent=result.error||"Inbox unavailable";return;}
+   inbox.replaceChildren();
+   inbox.classList.toggle("has-items",result.messages.length>0);
+   if(!result.messages.length){
+    const empty=document.createElement("div");
+    const heading=document.createElement("strong");heading.textContent="No messages yet";
+    const detail=document.createElement("p");detail.textContent="Encrypted envelopes will appear here when sent to your PIN.";
+    empty.append(heading,detail);inbox.append(empty);
+   }else for(const message of result.messages){
+    const row=document.createElement("div");row.className="envelope";
+    const sender=document.createElement("strong");sender.textContent=message.sender;
+    const note=document.createElement("small");note.textContent="Encrypted envelope received. Decryption is not implemented.";
+    const time=document.createElement("small");time.textContent="Received: "+message.receivedAt;
+    row.append(sender,note,time);inbox.append(row);
+   }
+   status.textContent=result.messages.length+" encrypted envelope(s) in your inbox. Decryption is not available yet.";
+  }catch{status.textContent="Inbox refresh failed.";}
+  finally{refresh.disabled=false;}
+ }
+ refresh.addEventListener("click",refreshInbox);
  try{
   const identity=await window.ZERO_DESKTOP.getIdentity();
   if(!identity.activated){pin.textContent="Unavailable";status.textContent=identity.error||"Activation unavailable";return;}
@@ -34,7 +60,8 @@
    status.textContent="Authenticating device...";
    try{
     const result=await window.ZERO_DESKTOP.authenticateDevice();
-    status.textContent=result.authenticated?"Device authenticated. Secure messaging is not yet implemented.":result.error||"Authentication unavailable";
+    status.textContent=result.authenticated?"Device authenticated. Checking encrypted inbox...":result.error||"Authentication unavailable";
+    if(result.authenticated){refresh.disabled=false;await refreshInbox();}
    }catch{status.textContent="Device authentication failed";}
    finally{authenticate.disabled=false;}
   });
