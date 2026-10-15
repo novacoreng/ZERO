@@ -18,17 +18,22 @@ export class MessageRelay {
   if(!PIN.test(sender)||!PIN.test(recipient))throw new Error("Invalid sender or recipient");
   if(sender===recipient)throw new Error("Self messaging is unsupported");
   if(!encrypted||typeof encrypted!=="object"||Array.isArray(encrypted))throw new Error("Invalid envelope");
-  const {algorithm,nonce,ciphertext}=encrypted;
-  if(algorithm!=="xchacha20poly1305-v1")throw new Error("Unsupported encryption envelope");
-  if(typeof nonce!=="string"||nonce.length!==32||!B64.test(nonce))throw new Error("Invalid nonce");
+  const {algorithm,nonce,ciphertext,salt,ephemeralPublicKey}=encrypted;
+  if(algorithm!=="x25519-hkdf-aes256gcm-v1")throw new Error("Unsupported encryption envelope");
+  if(typeof nonce!=="string"||nonce.length!==16||!B64.test(nonce))throw new Error("Invalid nonce");
+  if(typeof salt!=="string"||salt.length!==43||!B64.test(salt))throw new Error("Invalid salt");
+  if(typeof ephemeralPublicKey!=="string"||ephemeralPublicKey.length>256||ephemeralPublicKey.length<80)throw new Error("Invalid ephemeral public key");
+  let key;
+  try{key=crypto.createPublicKey(ephemeralPublicKey);}catch{throw new Error("Invalid ephemeral public key");}
+  if(key.asymmetricKeyType!=="x25519")throw new Error("Invalid ephemeral public key");
   if(typeof ciphertext!=="string"||ciphertext.length<24||ciphertext.length>87384||!B64.test(ciphertext))throw new Error("Invalid ciphertext");
-  if(Object.keys(encrypted).some(key=>!["algorithm","nonce","ciphertext"].includes(key)))throw new Error("Unexpected envelope field");
+  if(Object.keys(encrypted).some(key=>!["algorithm","nonce","ciphertext","salt","ephemeralPublicKey"].includes(key)))throw new Error("Unexpected envelope field");
   this.purge(recipient);
   const queue=this.queues.get(recipient)||[];
   if(queue.length>=this.maxPerRecipient)throw new Error("Recipient inbox full");
   const ttl=ttlSeconds===undefined?this.defaultTtlMs:Number(ttlSeconds)*1000;
   if(!Number.isSafeInteger(ttl)||ttl<10_000||ttl>7*24*60*60*1000)throw new Error("Invalid message expiration");
-  const record={id:crypto.randomUUID(),sender,recipient,encrypted:{algorithm,nonce,ciphertext},receivedAt:new Date(this.clock()).toISOString(),expiresAt:new Date(this.clock()+ttl).toISOString()};
+  const record={id:crypto.randomUUID(),sender,recipient,encrypted:{algorithm,nonce,ciphertext,salt,ephemeralPublicKey},receivedAt:new Date(this.clock()).toISOString(),expiresAt:new Date(this.clock()+ttl).toISOString()};
   queue.push(record);
   this.queues.set(recipient,queue);
   return {id:record.id,queued:true};
