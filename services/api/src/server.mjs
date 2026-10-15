@@ -6,6 +6,7 @@ const registry=new DeviceRegistry({file:process.env.ZERO_DEVICE_REGISTRY_FILE||u
 if(!process.env.ZERO_DEVICE_REGISTRY_FILE)console.warn("ZERO API: registry is ephemeral. Do not use for production.");
 const counters=new Map();
 const relay=new MessageRelay();
+const MAX_JSON_BYTES=96*1024;
 function rateLimit(ip){
  const now=Date.now();const old=counters.get(ip);
  const entry=!old||now-old.start>60_000?{start:now,count:0}:old;
@@ -39,8 +40,13 @@ const server=http.createServer(async(req,res)=>{
  if(req.method!=="POST"||!["/v1/devices/challenge","/v1/devices/register","/v1/session/challenge","/v1/session/authenticate","/v1/messages/send","/v1/messages/acknowledge"].includes(req.url))return json(res,404,{error:"Not found"});
  if(!req.headers["content-type"]?.startsWith("application/json"))return json(res,415,{error:"JSON required"});
  let body="";
+ let bytes=0;
  try{
-  for await(const chunk of req){body+=chunk;if(body.length>4096){req.destroy();return;}}
+  for await(const chunk of req){
+   bytes+=chunk.length;
+   if(bytes>MAX_JSON_BYTES)return json(res,413,{error:"Request too large"});
+   body+=chunk.toString("utf8");
+  }
   const input=JSON.parse(body);
   if(!input||typeof input!=="object"||Array.isArray(input))throw new Error("Invalid request");
   if(req.url==="/v1/messages/send"||req.url==="/v1/messages/acknowledge"){
@@ -55,6 +61,6 @@ const server=http.createServer(async(req,res)=>{
   if(req.url==="/v1/session/challenge")return json(res,200,registry.challenge(input.publicKey,"session"));
   if(req.url==="/v1/session/authenticate")return json(res,200,registry.authenticate(input));
   return json(res,200,registry.register(input));
- }catch{return json(res,400,{error:"Invalid device registration request"});}
+ }catch{return json(res,400,{error:"Invalid request"});}
 });
 server.listen(port,"127.0.0.1",()=>console.log("ZERO device registry listening on localhost:"+port));
