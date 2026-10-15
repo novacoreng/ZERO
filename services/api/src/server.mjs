@@ -22,6 +22,11 @@ const server=http.createServer(async(req,res)=>{
  const ip=req.socket.remoteAddress||"unknown";
  if(!rateLimit(ip))return json(res,429,{error:"Rate limit exceeded"});
  if(req.method==="GET"&&req.url==="/health")return json(res,200,{status:"ok",service:"zero-device-registry"});
+ if(req.method==="GET"&&req.url?.startsWith("/v1/encryption-keys/")){
+  const pin=req.url.slice("/v1/encryption-keys/".length);
+  const entry=registry.lookupEncryptionKey(pin);
+  return json(res,entry?200:404,entry||{error:"Encryption key not published"});
+ }
  if(req.method==="GET"&&req.url==="/v1/messages/inbox"){
   const auth=req.headers.authorization||"";
   const device=registry.authorize(auth.startsWith("Bearer ")?auth.slice(7):"");
@@ -37,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
   const device=registry.lookup(pin);
   return json(res,device?200:404,device||{error:"Device not found"});
  }
- if(req.method!=="POST"||!["/v1/devices/challenge","/v1/devices/register","/v1/session/challenge","/v1/session/authenticate","/v1/messages/send","/v1/messages/acknowledge"].includes(req.url))return json(res,404,{error:"Not found"});
+ if(req.method!=="POST"||!["/v1/devices/challenge","/v1/devices/register","/v1/session/challenge","/v1/session/authenticate","/v1/messages/send","/v1/messages/acknowledge","/v1/encryption-keys/publish"].includes(req.url))return json(res,404,{error:"Not found"});
  if(!req.headers["content-type"]?.startsWith("application/json"))return json(res,415,{error:"JSON required"});
  let body="";
  let bytes=0;
@@ -49,10 +54,11 @@ const server=http.createServer(async(req,res)=>{
   }
   const input=JSON.parse(body);
   if(!input||typeof input!=="object"||Array.isArray(input))throw new Error("Invalid request");
-  if(req.url==="/v1/messages/send"||req.url==="/v1/messages/acknowledge"){
+  if(req.url==="/v1/messages/send"||req.url==="/v1/messages/acknowledge"||req.url==="/v1/encryption-keys/publish"){
    const auth=req.headers.authorization||"";
    const sender=registry.authorize(auth.startsWith("Bearer ")?auth.slice(7):"");
    if(!sender)return json(res,401,{error:"Authentication required"});
+   if(req.url==="/v1/encryption-keys/publish")return json(res,200,registry.publishEncryptionKey(sender.pin,input.publicKey,input.signature));
    if(req.url==="/v1/messages/acknowledge")return json(res,200,relay.acknowledge(sender.pin,input.id));
    if(!registry.lookup(input.recipient))return json(res,404,{error:"Recipient not registered"});
    return json(res,202,relay.send(sender.pin,input.recipient,input.encrypted,input.ttlSeconds));
