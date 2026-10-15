@@ -1,6 +1,23 @@
 "use strict";
 (async()=>{
  const pin=document.getElementById("pin");
+ const title=document.getElementById("section-title");
+ const viewTitle=document.getElementById("view-title");
+ const welcomeTitle=document.getElementById("welcome-title");
+ const welcomeText=document.getElementById("welcome-text");
+ const navs=["chats","contacts","settings"];
+ function show(view){
+  navs.forEach(name=>document.getElementById("nav-"+name).classList.toggle("active",name===view));
+  title.textContent=view==="chats"?"Chats":view==="contacts"?"Contacts":"Settings";
+  viewTitle.textContent=title.textContent;
+  welcomeTitle.textContent=view==="chats"?"Welcome to ZERO":view==="contacts"?"Your contacts":"Device settings";
+  welcomeText.textContent=view==="chats"?"No signups. Your device creates its own PIN. Conversations will appear once secure messaging is implemented.":view==="contacts"?"Contacts will appear after PIN discovery and secure messaging are connected.":"Your device PIN and registration controls are in the sidebar.";
+ }
+ navs.forEach(name=>document.getElementById("nav-"+name).addEventListener("click",()=>show(name)));
+ document.getElementById("nav-back").addEventListener("click",()=>show("chats"));
+ document.getElementById("new-chat").addEventListener("click",()=>{show("contacts");document.getElementById("status").textContent="Starting a chat requires authenticated messaging, which is not available yet.";});
+ document.getElementById("search").addEventListener("input",event=>{if(event.target.value.trim())document.getElementById("status").textContent="No connected conversations to search yet.";});
+
  const status=document.getElementById("status");
  const copy=document.getElementById("copy");
  const register=document.getElementById("register");
