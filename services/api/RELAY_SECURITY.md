@@ -13,3 +13,8 @@ The API enforces a 96 KiB request-body limit for encrypted envelopes; oversized 
 
 ## Protocol alignment
 The relay now accepts the same **envelope structure** as the isolated desktop X25519/HKDF/AES-GCM prototype. This is a format alignment only: the server cannot establish that ciphertext was correctly encrypted. Authenticated encryption-key registration, contact verification of that key, client send/receive integration, replay prevention, and a ratcheting protocol remain pending.
+
+## Signed encryption-key directory (development)
+`POST /v1/encryption-keys/publish` requires an authenticated bearer session and JSON `{publicKey,signature}`. The public key is canonical PEM-encoded X25519 SPKI. The signature is Ed25519 over the exact UTF-8 bytes `ZERO-ENCRYPTION-KEY-V1|<PIN>|<publicKey PEM>`, using the device identity that originally registered the PIN. The server derives the publishing PIN from the authenticated session, not from a client-provided PIN. `GET /v1/encryption-keys/<PIN>` returns the signed record. Existing encryption keys cannot be silently replaced; key rotation/recovery requires a separately designed protocol.
+
+A client MUST verify the returned identity key fingerprints to the expected PIN, the X25519 public key type, and the Ed25519 signature locally. Merely retrieving a key from the directory is insufficient to claim authenticated E2EE. The registry currently has development-only persistence and no transparency or multi-device key-change protocol.
