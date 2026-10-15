@@ -2,6 +2,7 @@ import {MessageRelay} from "./message-relay.mjs";
 import http from "node:http";
 import {DeviceRegistry} from "./device-registry.mjs";
 const port=Number(process.env.PORT||8787);
+const host=process.env.ZERO_API_HOST||"127.0.0.1";
 const registry=new DeviceRegistry({file:process.env.ZERO_DEVICE_REGISTRY_FILE||undefined});
 if(!process.env.ZERO_DEVICE_REGISTRY_FILE)console.warn("ZERO API: registry is ephemeral. Do not use for production.");
 const counters=new Map();
@@ -69,4 +70,4 @@ const server=http.createServer(async(req,res)=>{
   return json(res,200,registry.register(input));
  }catch{return json(res,400,{error:"Invalid request"});}
 });
-server.listen(port,"127.0.0.1",()=>console.log("ZERO device registry listening on localhost:"+port));
+server.listen(port,host,()=>console.log("ZERO device registry listening on "+host+":"+server.address().port));
