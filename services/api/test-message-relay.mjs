@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import {MessageRelay} from "./src/message-relay.mjs";
 const relay=new MessageRelay({maxPerRecipient:1});
 const a="ABCD-EFGH-JKLM-NPQR",b="STUV-WXYZ-2345-6789";
-const encrypted={algorithm:"xchacha20poly1305-v1",nonce:"A".repeat(32),ciphertext:"B".repeat(40)};
+const ephemeral=crypto.generateKeyPairSync("x25519").publicKey.export({type:"spki",format:"pem"}).toString();
+const encrypted={algorithm:"x25519-hkdf-aes256gcm-v1",ephemeralPublicKey:ephemeral,salt:"A".repeat(43),nonce:"A".repeat(16),ciphertext:"B".repeat(40)};
 assert.throws(()=>relay.send(a,b,{...encrypted,plaintext:"hello"}));
 assert.throws(()=>relay.send(a,b,{...encrypted,algorithm:"none"}));
+assert.throws(()=>relay.send(a,b,{...encrypted,ephemeralPublicKey:"not a key"}));
 const sent=relay.send(a,b,encrypted);
 assert.equal(sent.queued,true);
 const inbox=relay.inbox(b);
