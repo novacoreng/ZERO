@@ -20,7 +20,7 @@ function walk(dir){
 const violations=[];
 for(const file of walk(".")){
  const normalized=file.replaceAll("\\","/");
- if(forbiddenNames.test(basename(file)))violations.push("forbidden secret-like file: "+normalized);
+ if(basename(file)!==".env.example"&&forbiddenNames.test(basename(file)))violations.push("forbidden secret-like file: "+normalized);
  if(!textExtensions.has(extname(file)))continue;
  const content=readFileSync(file,"utf8");
  if(secretPatterns.some(pattern=>pattern.test(content))&&!normalized.endsWith(".env.example"))violations.push("possible secret pattern: "+normalized);
