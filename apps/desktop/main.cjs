@@ -2,6 +2,7 @@
 const {app,BrowserWindow,ipcMain,safeStorage}=require("electron");
 const path=require("node:path");
 const {loadOrCreateEncryptionIdentity,verifyPublishedKey}=require("./encryption-identity.cjs");
+const {createSignedMessage,openSignedMessage}=require("./signed-message.cjs");
 const {loadOrCreateIdentity,signChallenge}=require("./device-identity.cjs");
 let identity=null;
 let encryptionIdentity=null;
@@ -96,6 +97,60 @@ app.whenReady().then(()=>{
     return {found:true,pin:requestedPin,publicKey:device.publicKey,encryptionReady:true};
    }finally{clearTimeout(timer);}
   }catch{return {found:false,error:"Contact verification failed"};}
+ });
+ ipcMain.handle("zero:send-message",async(_event,recipient,plaintext)=>{
+  if(!identity||!encryptionIdentity||!sessionToken)return {sent:false,error:"Connect your device first"};
+  if(typeof recipient!=="string"||!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(recipient)||recipient===identity.pin)return {sent:false,error:"Invalid recipient"};
+  if(typeof plaintext!=="string"||!plaintext.trim()||Buffer.byteLength(plaintext,"utf8")>32768)return {sent:false,error:"Invalid message"};
+  try{
+   const base=process.env.ZERO_REGISTRY_URL;
+   const url=new URL(base);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw Error("Invalid protocol");
+   if(url.username||url.password||url.search||url.hash)throw Error("Invalid URL");
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const keyResponse=await fetch(new URL("/v1/encryption-keys/"+recipient,url),{signal:controller.signal});
+    if(!keyResponse.ok)throw Error("Recipient key unavailable");
+    const record=await keyResponse.json();
+    if(!verifyPublishedKey(recipient,record))throw Error("Unverified recipient key");
+    const encrypted=createSignedMessage({identity,recipient,recipientPublicKey:record.publicKey,plaintext});
+    const response=await fetch(new URL("/v1/messages/send",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({recipient,encrypted}),signal:controller.signal});
+    if(response.status===401){sessionToken=null;throw Error("Session expired");}
+    if(!response.ok)throw Error("Relay rejected message");
+    const result=await response.json();
+    if(result.queued!==true||typeof result.id!=="string")throw Error("Invalid relay response");
+    return {sent:true,id:result.id,recipient};
+   }finally{clearTimeout(timer);}
+  }catch{return {sent:false,error:"Could not send encrypted message. Check contact key and connection."};}
+ });
+ ipcMain.handle("zero:read-messages",async()=>{
+  if(!identity||!encryptionIdentity||!sessionToken)return {connected:false,error:"Connect your device first"};
+  try{
+   const url=new URL(process.env.ZERO_REGISTRY_URL);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw Error("Invalid protocol");
+   if(url.username||url.password||url.search||url.hash)throw Error("Invalid URL");
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const response=await fetch(new URL("/v1/messages/inbox",url),{headers:{authorization:"Bearer "+sessionToken},signal:controller.signal});
+    if(response.status===401){sessionToken=null;return {connected:false,error:"Session expired"};}
+    if(!response.ok)throw Error("Inbox unavailable");
+    const result=await response.json();
+    if(!Array.isArray(result.messages))throw Error("Invalid inbox");
+    const messages=[];
+    for(const item of result.messages.slice(0,500)){
+     if(item.recipient!==identity.pin||typeof item.sender!=="string")continue;
+     try{
+      const senderResponse=await fetch(new URL("/v1/devices/"+item.sender,url),{signal:controller.signal});
+      if(!senderResponse.ok)continue;
+      const sender=await senderResponse.json();
+      if(sender.pin!==item.sender||require("./device-identity.cjs").fingerprint(sender.publicKey)!==item.sender)continue;
+      const plaintext=openSignedMessage({sender:item.sender,recipient:identity.pin,identityPublicKey:sender.publicKey,recipientPrivateKey:encryptionIdentity.privateKey,envelope:item.encrypted});
+      messages.push({id:item.id,sender:item.sender,plaintext,receivedAt:item.receivedAt,expiresAt:item.expiresAt});
+     }catch{/* Unverified or malformed messages remain queued; never show plaintext. */}
+    }
+    return {connected:true,messages};
+   }finally{clearTimeout(timer);}
+  }catch{return {connected:false,error:"Could not decrypt inbox"};}
  });
  ipcMain.handle("zero:inbox",async()=>{
   if(!identity||!sessionToken)return {connected:false,error:"Connect your device first"};
