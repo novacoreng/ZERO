@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld("ZERO_DESKTOP",Object.freeze({
  registerDevice:()=>ipcRenderer.invoke("zero:register"),
  authenticateDevice:()=>ipcRenderer.invoke("zero:authenticate"),
  getInbox:()=>ipcRenderer.invoke("zero:inbox"),
- lookupContact:(pin)=>ipcRenderer.invoke("zero:lookup-contact",pin)
+ lookupContact:(pin)=>ipcRenderer.invoke("zero:lookup-contact",pin),
+ publishEncryptionKey:()=>ipcRenderer.invoke("zero:publish-encryption-key")
 }));
