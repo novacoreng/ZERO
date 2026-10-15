@@ -24,6 +24,25 @@
  const authenticate=document.getElementById("authenticate");
  const refresh=document.getElementById("refresh-inbox");
  const inbox=document.getElementById("inbox-list");
+ const lookup=document.getElementById("lookup");
+ lookup.addEventListener("click",async()=>{
+  const requestedPin=document.getElementById("search").value.trim().toUpperCase();
+  lookup.disabled=true;
+  status.textContent="Verifying contact public key...";
+  try{
+   const result=await window.ZERO_DESKTOP.lookupContact(requestedPin);
+   if(!result.found){status.textContent=result.error||"Contact not found";return;}
+   status.textContent="Contact PIN verified against public key. Messaging key agreement is not implemented yet.";
+   show("contacts");
+   inbox.replaceChildren();
+   inbox.classList.add("has-items");
+   const row=document.createElement("div");row.className="envelope";
+   const heading=document.createElement("strong");heading.textContent=result.pin;
+   const detail=document.createElement("small");detail.textContent="Public key fingerprint verified. Not saved as a trusted contact.";
+   row.append(heading,detail);inbox.append(row);
+  }catch{status.textContent="Contact verification failed";}
+  finally{lookup.disabled=false;}
+ });
  async function refreshInbox(){
   refresh.disabled=true;
   try{
@@ -61,7 +80,7 @@
    try{
     const result=await window.ZERO_DESKTOP.authenticateDevice();
     status.textContent=result.authenticated?"Device authenticated. Checking encrypted inbox...":result.error||"Authentication unavailable";
-    if(result.authenticated){refresh.disabled=false;await refreshInbox();}
+    if(result.authenticated){refresh.disabled=false;lookup.disabled=false;await refreshInbox();}
    }catch{status.textContent="Device authentication failed";}
    finally{authenticate.disabled=false;}
   });
