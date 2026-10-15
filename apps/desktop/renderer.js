@@ -32,13 +32,13 @@
   try{
    const result=await window.ZERO_DESKTOP.lookupContact(requestedPin);
    if(!result.found){status.textContent=result.error||"Contact not found";return;}
-   status.textContent="Contact PIN verified against public key. Messaging key agreement is not implemented yet.";
+   status.textContent=result.encryptionReady?"Contact identity and signed encryption key verified. Messaging is not yet enabled.":"Contact identity verified, but no signed encryption key is published.";
    show("contacts");
    inbox.replaceChildren();
    inbox.classList.add("has-items");
    const row=document.createElement("div");row.className="envelope";
    const heading=document.createElement("strong");heading.textContent=result.pin;
-   const detail=document.createElement("small");detail.textContent="Public key fingerprint verified. Not saved as a trusted contact.";
+   const detail=document.createElement("small");detail.textContent=result.encryptionReady?"Identity and signed encryption key verified. Not saved as a trusted contact.":"Identity verified; encryption key not published. Not saved as a trusted contact.";
    row.append(heading,detail);inbox.append(row);
   }catch{status.textContent="Contact verification failed";}
   finally{lookup.disabled=false;}
@@ -80,7 +80,12 @@
    try{
     const result=await window.ZERO_DESKTOP.authenticateDevice();
     status.textContent=result.authenticated?"Device authenticated. Checking encrypted inbox...":result.error||"Authentication unavailable";
-    if(result.authenticated){refresh.disabled=false;lookup.disabled=false;await refreshInbox();}
+    if(result.authenticated){
+     refresh.disabled=false;lookup.disabled=false;
+     const publication=await window.ZERO_DESKTOP.publishEncryptionKey();
+     if(!publication.published)status.textContent=publication.error||"Encryption key publication failed";
+     await refreshInbox();
+    }
    }catch{status.textContent="Device authentication failed";}
    finally{authenticate.disabled=false;}
   });
