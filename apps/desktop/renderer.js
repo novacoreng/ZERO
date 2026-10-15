@@ -18,7 +18,36 @@
  document.getElementById("new-chat").addEventListener("click",()=>{show("contacts");document.getElementById("status").textContent="Starting a chat requires authenticated messaging, which is not available yet.";});
  document.getElementById("search").addEventListener("input",event=>{if(event.target.value.trim())document.getElementById("status").textContent="No connected conversations to search yet.";});
 
+ let selectedRecipient=null;
+ const messageInput=document.getElementById("message-input");
+ const sendButton=document.getElementById("send-message");
  const status=document.getElementById("status");
+ async function showDecrypted(){
+  const result=await window.ZERO_DESKTOP.readMessages();
+  if(!result.connected){status.textContent=result.error||"Inbox unavailable";return;}
+  inbox.replaceChildren();inbox.classList.toggle("has-items",result.messages.length>0);
+  if(!result.messages.length){const empty=document.createElement("div");empty.textContent="No verified, decryptable messages yet.";inbox.append(empty);}
+  for(const message of result.messages){
+   const row=document.createElement("div");row.className="envelope";
+   const sender=document.createElement("strong");sender.textContent=message.sender;
+   const body=document.createElement("p");body.textContent=message.plaintext;
+   const time=document.createElement("small");time.textContent="Received: "+message.receivedAt;
+   row.append(sender,body,time);inbox.append(row);
+  }
+  status.textContent=result.messages.length+" verified decrypted message(s). Experimental protocol.";
+ }
+ sendButton.addEventListener("click",async()=>{
+  if(!selectedRecipient||!messageInput.value.trim())return;
+  sendButton.disabled=true;
+  try{
+   const result=await window.ZERO_DESKTOP.sendMessage(selectedRecipient,messageInput.value);
+   status.textContent=result.sent?"Encrypted message queued for "+selectedRecipient:result.error||"Send failed";
+   if(result.sent)messageInput.value="";
+  }catch{status.textContent="Encrypted message send failed";}
+  finally{sendButton.disabled=!selectedRecipient;}
+ });
+ messageInput.addEventListener("keydown",event=>{if(event.key==="Enter"&&!sendButton.disabled)sendButton.click();});
+
  const copy=document.getElementById("copy");
  const register=document.getElementById("register");
  const authenticate=document.getElementById("authenticate");
@@ -32,6 +61,8 @@
   try{
    const result=await window.ZERO_DESKTOP.lookupContact(requestedPin);
    if(!result.found){status.textContent=result.error||"Contact not found";return;}
+   selectedRecipient=result.encryptionReady?result.pin:null;
+   messageInput.disabled=!selectedRecipient;sendButton.disabled=!selectedRecipient;
    status.textContent=result.encryptionReady?"Contact identity and signed encryption key verified. Messaging is not yet enabled.":"Contact identity verified, but no signed encryption key is published.";
    show("contacts");
    inbox.replaceChildren();
@@ -66,7 +97,7 @@
   }catch{status.textContent="Inbox refresh failed.";}
   finally{refresh.disabled=false;}
  }
- refresh.addEventListener("click",refreshInbox);
+ refresh.addEventListener("click",showDecrypted);
  try{
   const identity=await window.ZERO_DESKTOP.getIdentity();
   if(!identity.activated){pin.textContent="Unavailable";status.textContent=identity.error||"Activation unavailable";return;}
@@ -84,7 +115,7 @@
      refresh.disabled=false;lookup.disabled=false;
      const publication=await window.ZERO_DESKTOP.publishEncryptionKey();
      if(!publication.published)status.textContent=publication.error||"Encryption key publication failed";
-     await refreshInbox();
+     await showDecrypted();
     }
    }catch{status.textContent="Device authentication failed";}
    finally{authenticate.disabled=false;}
