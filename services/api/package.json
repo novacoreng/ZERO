@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "tsc && node test.mjs && node test-device-registry.mjs",
+    "test": "tsc && node test.mjs && node test-device-registry.mjs && node test-message-relay.mjs",
     "lint": "node -e \"console.log('api lint reserved for service implementation phase')\"",
     "start": "node dist/index.js",
     "dev:registry": "node src/server.mjs"
