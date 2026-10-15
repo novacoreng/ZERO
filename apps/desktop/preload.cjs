@@ -4,5 +4,6 @@ contextBridge.exposeInMainWorld("ZERO_DESKTOP",Object.freeze({
  platform:process.platform,
  getIdentity:()=>ipcRenderer.invoke("zero:identity"),
  registerDevice:()=>ipcRenderer.invoke("zero:register"),
- authenticateDevice:()=>ipcRenderer.invoke("zero:authenticate")
+ authenticateDevice:()=>ipcRenderer.invoke("zero:authenticate"),
+ getInbox:()=>ipcRenderer.invoke("zero:inbox")
 }));
