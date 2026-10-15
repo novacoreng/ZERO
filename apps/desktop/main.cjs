@@ -46,6 +46,29 @@ app.whenReady().then(()=>{
    }finally{clearTimeout(timer);}
   }catch{return {authenticated:false,error:"Device authentication failed. Register this PIN first."};}
  });
+ ipcMain.handle("zero:lookup-contact",async(_event,requestedPin)=>{
+  if(!identity||!sessionToken)return {found:false,error:"Connect your device first"};
+  if(typeof requestedPin!=="string"||!(/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(requestedPin)))return {found:false,error:"Enter a valid ZERO PIN"};
+  if(requestedPin===identity.pin)return {found:false,error:"This is your own device PIN"};
+  const base=process.env.ZERO_REGISTRY_URL;
+  if(!base)return {found:false,error:"Registry not configured"};
+  try{
+   const url=new URL(base);
+   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("Invalid protocol");
+   if(url.username||url.password||url.search||url.hash)throw new Error("Invalid URL");
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const response=await fetch(new URL("/v1/devices/"+encodeURIComponent(requestedPin),url),{signal:controller.signal,headers:{authorization:"Bearer "+sessionToken}});
+    if(response.status===404)return {found:false,error:"No registered device with that PIN"};
+    if(!response.ok)throw new Error("Lookup unavailable");
+    const device=await response.json();
+    const {fingerprint}=require("./device-identity.cjs");
+    if(device.pin!==requestedPin||typeof device.publicKey!=="string"||fingerprint(device.publicKey)!==requestedPin)throw new Error("Contact identity mismatch");
+    return {found:true,pin:requestedPin,publicKey:device.publicKey};
+   }finally{clearTimeout(timer);}
+  }catch{return {found:false,error:"Contact verification failed"};}
+ });
  ipcMain.handle("zero:inbox",async()=>{
   if(!identity||!sessionToken)return {connected:false,error:"Connect your device first"};
   const base=process.env.ZERO_REGISTRY_URL;
