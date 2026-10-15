@@ -55,7 +55,7 @@ const server=http.createServer(async(req,res)=>{
    if(!sender)return json(res,401,{error:"Authentication required"});
    if(req.url==="/v1/messages/acknowledge")return json(res,200,relay.acknowledge(sender.pin,input.id));
    if(!registry.lookup(input.recipient))return json(res,404,{error:"Recipient not registered"});
-   return json(res,202,relay.send(sender.pin,input.recipient,input.encrypted));
+   return json(res,202,relay.send(sender.pin,input.recipient,input.encrypted,input.ttlSeconds));
   }
   if(req.url==="/v1/devices/challenge")return json(res,200,registry.challenge(input.publicKey));
   if(req.url==="/v1/session/challenge")return json(res,200,registry.challenge(input.publicKey,"session"));
