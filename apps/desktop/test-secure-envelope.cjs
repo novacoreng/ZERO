@@ -1,0 +1,15 @@
+"use strict";
+const assert=require("node:assert/strict");
+const {generateEncryptionKeys,encrypt,decrypt}=require("./secure-envelope.cjs");
+const sender="ABCD-EFGH-JKLM-NPQR",recipient="STUV-WXYZ-2345-6789";
+const alice=generateEncryptionKeys(),bob=generateEncryptionKeys();
+const envelope=encrypt({sender,recipient,recipientPublicKey:bob.publicKey,plaintext:"Private test message"});
+assert.equal(envelope.algorithm,"x25519-hkdf-aes256gcm-v1");
+assert.equal(JSON.stringify(envelope).includes("Private test message"),false);
+assert.equal(decrypt({sender,recipient,recipientPrivateKey:bob.privateKey,envelope}),"Private test message");
+assert.throws(()=>decrypt({sender:recipient,recipient:sender,recipientPrivateKey:bob.privateKey,envelope}));
+assert.throws(()=>decrypt({sender,recipient,recipientPrivateKey:alice.privateKey,envelope}));
+const modified={...envelope,ciphertext:envelope.ciphertext.slice(0,-2)+"AA"};
+assert.throws(()=>decrypt({sender,recipient,recipientPrivateKey:bob.privateKey,envelope:modified}));
+assert.throws(()=>encrypt({sender,recipient,recipientPublicKey:bob.publicKey,plaintext:""}));
+console.log("ZERO isolated encryption primitive tests passed");
