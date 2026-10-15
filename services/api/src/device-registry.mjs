@@ -14,17 +14,18 @@ export function derivePin(pem){
 }
 export class DeviceRegistry{
  constructor({file,clock=()=>Date.now()}){
-  this.file=file;this.clock=clock;this.challenges=new Map();this.devices=new Map();this.sessions=new Map();
+  this.file=file;this.clock=clock;this.challenges=new Map();this.devices=new Map();this.sessions=new Map();this.encryptionKeys=new Map();
   if(file&&fs.existsSync(file)){
    const data=JSON.parse(fs.readFileSync(file,"utf8"));
    for(const entry of data.devices||[])this.devices.set(entry.pin,entry);
+   for(const entry of data.encryptionKeys||[])this.encryptionKeys.set(entry.pin,entry);
   }
  }
  persist(){
   if(!this.file)return;
   fs.mkdirSync(path.dirname(this.file),{recursive:true,mode:0o700});
   const temp=this.file+"."+process.pid+"."+crypto.randomBytes(6).toString("hex")+".tmp";
-  try{fs.writeFileSync(temp,JSON.stringify({version:1,devices:[...this.devices.values()]}),{mode:0o600,flag:"wx"});fs.renameSync(temp,this.file);}
+  try{fs.writeFileSync(temp,JSON.stringify({version:1,devices:[...this.devices.values()],encryptionKeys:[...this.encryptionKeys.values()]}),{mode:0o600,flag:"wx"});fs.renameSync(temp,this.file);}
   finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}
  }
  challenge(publicKey,purpose="register"){
@@ -71,6 +72,30 @@ export class DeviceRegistry{
   if(!session||session.expires<=this.clock()){this.sessions.delete(digest);return null;}
   const device=this.devices.get(session.pin);
   return device&&!device.revoked?{pin:device.pin,publicKey:device.publicKey}:null;
+ }
+ publishEncryptionKey(pin,publicKey,signature){
+  const device=this.devices.get(pin);
+  if(!device||device.revoked)throw new Error("Device not registered");
+  if(typeof publicKey!=="string"||publicKey.length>512)throw new Error("Invalid encryption public key");
+  const key=crypto.createPublicKey(publicKey);
+  if(key.asymmetricKeyType!=="x25519")throw new Error("Only X25519 encryption keys accepted");
+  const canonical=key.export({format:"pem",type:"spki"}).toString();
+  if(canonical!==publicKey)throw new Error("Noncanonical encryption key");
+  if(typeof signature!=="string"||!/^[A-Za-z0-9_-]{80,100}$/.test(signature))throw new Error("Invalid signature");
+  const statement="ZERO-ENCRYPTION-KEY-V1|"+pin+"|"+canonical;
+  if(!crypto.verify(null,Buffer.from(statement),crypto.createPublicKey(device.publicKey),Buffer.from(signature,"base64url")))throw new Error("Invalid encryption key signature");
+  const existing=this.encryptionKeys.get(pin);
+  if(existing&&existing.publicKey!==canonical)throw new Error("Encryption key rotation not yet supported");
+  if(!existing){
+   this.encryptionKeys.set(pin,{pin,publicKey:canonical,signature,identityPublicKey:device.publicKey,createdAt:new Date(this.clock()).toISOString()});
+   this.persist();
+  }
+  return {published:true,pin};
+ }
+ lookupEncryptionKey(pin){
+  const device=this.lookup(pin),entry=this.encryptionKeys.get(pin);
+  if(!device||!entry||entry.identityPublicKey!==device.publicKey)return null;
+  return {...entry};
  }
  lookup(pin){
   if(typeof pin!=="string"||!(/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(pin)))return null;
