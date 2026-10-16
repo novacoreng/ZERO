@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "electron .",
     "dist:win": "electron-builder --win nsis --x64",
-    "test": "node test-identity.cjs && node test-secure-envelope.cjs && node test-encryption-identity.cjs && node test-signed-message.cjs && node test-two-device-exchange.cjs && node test-replay-store.cjs && node test-renderer-contract.cjs"
+    "test": "node test-identity.cjs && node test-secure-envelope.cjs && node test-encryption-identity.cjs && node test-signed-message.cjs && node test-two-device-exchange.cjs && node test-replay-store.cjs && node test-renderer-contract.cjs && node test-inbox-store.cjs"
   },
   "devDependencies": {
     "electron": "^38.2.1",
@@ -27,7 +27,8 @@
       "encryption-identity.cjs",
       "index.html",
       "renderer.js",
-      "package.json"
+      "package.json",
+      "inbox-store.cjs"
     ],
     "win": {
       "target": [
