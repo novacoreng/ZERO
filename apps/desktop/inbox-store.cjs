@@ -23,18 +23,25 @@ function createInboxStore(directory,safeStorage,ownerPin){
  function has(id){if(!UUID.test(id))throw Error("Invalid message ID");return Object.hasOwn(messages,id);}
  function save(message){
   if(!message||!UUID.test(message.id)||typeof message.sender!=="string"||typeof message.plaintext!=="string"||typeof message.receivedAt!=="string"||typeof message.expiresAt!=="string"||!Number.isFinite(Date.parse(message.expiresAt)))throw Error("Invalid inbox message");
-  if(has(message.id))return false;
   pruneExpired();
+  if(Date.parse(message.expiresAt)<=Date.now())throw Error("Expired inbox message");
+  if(has(message.id))return false;
   if(Object.keys(messages).length>=5000)throw Error("Encrypted inbox capacity exceeded");
-  messages[message.id]={id:message.id,sender:message.sender,plaintext:message.plaintext,receivedAt:message.receivedAt,expiresAt:message.expiresAt};
-  try{persist();}catch(error){delete messages[message.id];throw error;}
+  const previous=messages;
+  messages={...messages,[message.id]:{id:message.id,sender:message.sender,plaintext:message.plaintext,receivedAt:message.receivedAt,expiresAt:message.expiresAt}};
+  try{persist();}catch(error){messages=previous;throw error;}
   return true;
  }
  function pruneExpired(){
   const now=Date.now();
   let changed=false;
-  for(const [id,item]of Object.entries(messages))if(Date.parse(item.expiresAt)<=now){delete messages[id];changed=true;}
-  if(changed)persist();
+  const previous=messages;
+  const active={};
+  for(const [id,item]of Object.entries(messages)){
+   if(!item||!Number.isFinite(Date.parse(item.expiresAt))||Date.parse(item.expiresAt)<=now){changed=true;continue;}
+   active[id]=item;
+  }
+  if(changed){messages=active;try{persist();}catch(error){messages=previous;throw error;}}
  }
  function list(){
   pruneExpired();
