@@ -24,16 +24,20 @@ function createInboxStore(directory,safeStorage,ownerPin){
  function save(message){
   if(!message||!UUID.test(message.id)||typeof message.sender!=="string"||typeof message.plaintext!=="string"||typeof message.receivedAt!=="string"||typeof message.expiresAt!=="string"||!Number.isFinite(Date.parse(message.expiresAt)))throw Error("Invalid inbox message");
   if(has(message.id))return false;
+  pruneExpired();
   if(Object.keys(messages).length>=5000)throw Error("Encrypted inbox capacity exceeded");
   messages[message.id]={id:message.id,sender:message.sender,plaintext:message.plaintext,receivedAt:message.receivedAt,expiresAt:message.expiresAt};
   try{persist();}catch(error){delete messages[message.id];throw error;}
   return true;
  }
- function list(){
+ function pruneExpired(){
   const now=Date.now();
   let changed=false;
   for(const [id,item]of Object.entries(messages))if(Date.parse(item.expiresAt)<=now){delete messages[id];changed=true;}
   if(changed)persist();
+ }
+ function list(){
+  pruneExpired();
   return Object.values(messages).sort((a,b)=>a.receivedAt.localeCompare(b.receivedAt)).slice(-500);
  }
  return {has,save,list};
