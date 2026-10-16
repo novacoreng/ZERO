@@ -2,7 +2,11 @@
 const fs=require("node:fs");
 const path=require("node:path");
 const crypto=require("node:crypto");
+const PIN=/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function validMessage(message){
+ return message&&typeof message==="object"&&!Array.isArray(message)&&typeof message.id==="string"&&UUID.test(message.id)&&typeof message.sender==="string"&&PIN.test(message.sender)&&typeof message.plaintext==="string"&&Buffer.byteLength(message.plaintext,"utf8")<=32768&&typeof message.receivedAt==="string"&&Number.isFinite(Date.parse(message.receivedAt))&&typeof message.expiresAt==="string"&&Number.isFinite(Date.parse(message.expiresAt));
+}
 function createInboxStore(directory,safeStorage,ownerPin){
  if(!safeStorage.isEncryptionAvailable())throw Error("OS encryption unavailable");
  fs.mkdirSync(directory,{recursive:true,mode:0o700});
@@ -12,7 +16,7 @@ function createInboxStore(directory,safeStorage,ownerPin){
   const record=JSON.parse(fs.readFileSync(file,"utf8"));
   if(record.version!==1||record.ownerPin!==ownerPin||typeof record.encrypted!=="string")throw Error("Inbox store identity mismatch");
   messages=JSON.parse(safeStorage.decryptString(Buffer.from(record.encrypted,"base64")));
-  if(!messages||typeof messages!=="object"||Array.isArray(messages))throw Error("Invalid inbox store");
+  if(!messages||typeof messages!=="object"||Array.isArray(messages)||Object.keys(messages).length>5000||Object.entries(messages).some(([id,item])=>!validMessage(item)||id!==item.id))throw Error("Invalid inbox store");
  }
  function persist(){
   const encrypted=safeStorage.encryptString(JSON.stringify(messages)).toString("base64");
@@ -22,7 +26,7 @@ function createInboxStore(directory,safeStorage,ownerPin){
  }
  function has(id){if(!UUID.test(id))throw Error("Invalid message ID");return Object.hasOwn(messages,id);}
  function save(message){
-  if(!message||!UUID.test(message.id)||typeof message.sender!=="string"||typeof message.plaintext!=="string"||typeof message.receivedAt!=="string"||typeof message.expiresAt!=="string"||!Number.isFinite(Date.parse(message.expiresAt)))throw Error("Invalid inbox message");
+  if(!validMessage(message))throw Error("Invalid inbox message");
   pruneExpired();
   if(Date.parse(message.expiresAt)<=Date.now())throw Error("Expired inbox message");
   if(has(message.id))return false;
