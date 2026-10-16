@@ -28,7 +28,7 @@
   try{result=await window.ZERO_DESKTOP.readMessages();}
   catch{status.textContent="Inbox refresh failed";refresh.disabled=false;return;}
   finally{refresh.disabled=false;}
-  if(!result.connected){status.textContent=result.error||"Inbox unavailable";return;}
+  if(!result.connected&&!Array.isArray(result.messages)){status.textContent=result.error||"Inbox unavailable";return;}
   inbox.replaceChildren();inbox.classList.toggle("has-items",result.messages.length>0);
   if(!result.messages.length){const empty=document.createElement("div");empty.textContent="No verified, decryptable messages yet.";inbox.append(empty);}
   for(const message of result.messages){
@@ -38,7 +38,7 @@
    const time=document.createElement("small");time.textContent="Received: "+message.receivedAt;
    row.append(sender,body,time);inbox.append(row);
   }
-  status.textContent=result.messages.length+" verified decrypted message(s). Experimental protocol.";
+  status.textContent=result.messages.length+" verified saved message(s). "+(result.offline?"Offline: relay not connected.":"Experimental protocol.");
  }
  sendButton.addEventListener("click",async()=>{
   if(!selectedRecipient||!messageInput.value.trim())return;
@@ -115,6 +115,7 @@
    try{await navigator.clipboard.writeText(identity.pin);copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy",1500);}
    catch{status.textContent="Clipboard permission denied. Select the PIN to copy it.";}
   });
-  status.textContent="Local device identity activated. Messaging service connection is pending.";
+  status.textContent="Local device identity activated. Connect to send or receive new messages.";
+  await showDecrypted();
  }catch{pin.textContent="Unavailable";status.textContent="Device identity could not be loaded.";}
 })();
