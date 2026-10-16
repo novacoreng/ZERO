@@ -170,27 +170,6 @@ app.whenReady().then(()=>{
    }finally{clearTimeout(timer);}
   }catch{return {connected:false,messages:inboxStore.list(),offline:true,error:"Relay unavailable. Showing locally saved messages."};}
  });
- ipcMain.handle("zero:inbox",async()=>{
-  if(!identity||!sessionToken)return {connected:false,error:"Connect your device first"};
-  const base=process.env.ZERO_REGISTRY_URL;
-  if(!base)return {connected:false,error:"Registry not configured"};
-  try{
-   const url=new URL(base);
-   if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("Invalid protocol");
-   if(url.username||url.password||url.search||url.hash)throw new Error("Invalid URL");
-   const controller=new AbortController();
-   const timer=setTimeout(()=>controller.abort(),8000);
-   try{
-    const response=await fetch(new URL("/v1/messages/inbox",url),{headers:{authorization:"Bearer "+sessionToken},signal:controller.signal});
-    if(response.status===401){sessionToken=null;return {connected:false,error:"Session expired. Connect again."};}
-    if(!response.ok)throw new Error("Inbox unavailable");
-    const result=await response.json();
-    if(!Array.isArray(result.messages))throw new Error("Invalid inbox");
-    // Never pass unverified ciphertext or plaintext to the renderer.
-    return {connected:true,messages:result.messages.slice(0,500).map(m=>({id:String(m.id),sender:String(m.sender),receivedAt:String(m.receivedAt),expiresAt:String(m.expiresAt)}))};
-   }finally{clearTimeout(timer);}
-  }catch{return {connected:false,error:"Could not refresh inbox"};}
- });
  ipcMain.handle("zero:register",async()=>{
   if(!identity||!encryptionIdentity||!inboxStore)return {registered:false,error:"Local device identity unavailable"};
   const base=process.env.ZERO_REGISTRY_URL;
