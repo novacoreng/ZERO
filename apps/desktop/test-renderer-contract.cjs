@@ -14,5 +14,5 @@ assert.doesNotMatch(renderer,/async function refreshInbox\(/);
 assert.match(preload,/sendMessage:\(recipient,plaintext\)/);
 assert.match(preload,/readMessages:\(\)/);
 const manifest=require("./package.json");
-for(const name of ["main.cjs","preload.cjs","device-identity.cjs","encryption-identity.cjs","secure-envelope.cjs","signed-message.cjs","replay-store.cjs","index.html","renderer.js"])assert.ok(manifest.build.files.includes(name),"Missing installer module: "+name);
+for(const name of ["main.cjs","preload.cjs","device-identity.cjs","encryption-identity.cjs","secure-envelope.cjs","signed-message.cjs","replay-store.cjs","inbox-store.cjs","index.html","renderer.js"])assert.ok(manifest.build.files.includes(name),"Missing installer module: "+name);
 console.log("ZERO desktop renderer and installer contract tests passed");
