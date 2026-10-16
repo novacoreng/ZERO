@@ -11,12 +11,12 @@
   title.textContent=view==="chats"?"Chats":view==="contacts"?"Contacts":"Settings";
   viewTitle.textContent=title.textContent;
   welcomeTitle.textContent=view==="chats"?"Welcome to ZERO":view==="contacts"?"Your contacts":"Device settings";
-  welcomeText.textContent=view==="chats"?"No signups. Your device creates its own PIN. Conversations will appear once secure messaging is implemented.":view==="contacts"?"Contacts will appear after PIN discovery and secure messaging are connected.":"Your device PIN and registration controls are in the sidebar.";
+  welcomeText.textContent=view==="chats"?"No signups. Your device creates its own PIN. Verified encrypted messages appear after connecting your device.":view==="contacts"?"Verify a contact PIN to enable experimental encrypted messaging.":"Your device PIN and registration controls are in the sidebar.";
  }
  navs.forEach(name=>document.getElementById("nav-"+name).addEventListener("click",()=>show(name)));
  document.getElementById("nav-back").addEventListener("click",()=>show("chats"));
- document.getElementById("new-chat").addEventListener("click",()=>{show("contacts");document.getElementById("status").textContent="Starting a chat requires authenticated messaging, which is not available yet.";});
- document.getElementById("search").addEventListener("input",event=>{if(event.target.value.trim())document.getElementById("status").textContent="No connected conversations to search yet.";});
+ document.getElementById("new-chat").addEventListener("click",()=>{show("contacts");document.getElementById("status").textContent="Connect your device, then verify a contact PIN to start an encrypted chat.";});
+ document.getElementById("search").addEventListener("input",event=>{if(event.target.value.trim())document.getElementById("status").textContent="Enter a contact PIN and select Verify contact.";});
 
  let selectedRecipient=null;
  const messageInput=document.getElementById("message-input");
@@ -57,13 +57,16 @@
  lookup.addEventListener("click",async()=>{
   const requestedPin=document.getElementById("search").value.trim().toUpperCase();
   lookup.disabled=true;
+  selectedRecipient=null;
+  messageInput.disabled=true;
+  sendButton.disabled=true;
   status.textContent="Verifying contact public key...";
   try{
    const result=await window.ZERO_DESKTOP.lookupContact(requestedPin);
    if(!result.found){status.textContent=result.error||"Contact not found";return;}
    selectedRecipient=result.encryptionReady?result.pin:null;
    messageInput.disabled=!selectedRecipient;sendButton.disabled=!selectedRecipient;
-   status.textContent=result.encryptionReady?"Contact identity and signed encryption key verified. Messaging is not yet enabled.":"Contact identity verified, but no signed encryption key is published.";
+   status.textContent=result.encryptionReady?"Contact identity and signed encryption key verified. Experimental encrypted messaging is available.":"Contact identity verified, but no signed encryption key is published.";
    show("contacts");
    inbox.replaceChildren();
    inbox.classList.add("has-items");
@@ -123,7 +126,7 @@
   register.addEventListener("click",async()=>{
    register.disabled=true;
    status.textContent="Registering device identity...";
-   try{const result=await window.ZERO_DESKTOP.registerDevice();status.textContent=result.registered?"Device PIN registered successfully. Messaging is not yet available.":result.error||"Registration unavailable";}
+   try{const result=await window.ZERO_DESKTOP.registerDevice();status.textContent=result.registered?"Device PIN registered. Connect your device to activate encrypted messaging.":result.error||"Registration unavailable";}
    catch{status.textContent="Device registration failed";}
    finally{register.disabled=false;}
   });
