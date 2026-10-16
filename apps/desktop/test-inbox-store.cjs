@@ -20,6 +20,9 @@ try{
  assert.deepEqual(reopened.list(),[message]);
  assert.throws(()=>createInboxStore(directory,storage,"OTHER-DEVICE-0000"));
  assert.throws(()=>reopened.save({...message,id:"invalid"}));
+ assert.throws(()=>reopened.save({...message,id:"123e4567-e89b-42d3-a456-426614174003",sender:"bad"}),/Invalid inbox message/);
+ assert.throws(()=>reopened.save({...message,id:"123e4567-e89b-42d3-a456-426614174004",plaintext:"x".repeat(32769)}),/Invalid inbox message/);
+ assert.throws(()=>reopened.save({...message,id:"123e4567-e89b-42d3-a456-426614174005",receivedAt:"not-a-date"}),/Invalid inbox message/);
  assert.throws(()=>reopened.save({...message,id:"123e4567-e89b-42d3-a456-426614174001",expiresAt:new Date(Date.now()-1000).toISOString()}),/Expired/);
  const broken={...storage,encryptString:()=>{throw Error("Disk encryption failed");}};
  const failing=createInboxStore(directory,broken,pin);
