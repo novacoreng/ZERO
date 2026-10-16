@@ -144,7 +144,7 @@ app.whenReady().then(()=>{
     const result=await response.json();
     if(!Array.isArray(result.messages))throw Error("Invalid inbox");
     for(const item of result.messages.slice(0,500)){
-     if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string")continue;
+     if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id))continue;
      if(inboxStore.has(item.id)){
       // Retry acknowledgement after a previous network failure, without redisplaying.
       try{
