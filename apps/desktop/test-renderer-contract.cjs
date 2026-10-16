@@ -8,6 +8,8 @@ const preload=fs.readFileSync(path.join(__dirname,"preload.cjs"),"utf8");
 for(const id of ["message-input","send-message","refresh-inbox","inbox-list","lookup","search","status"])assert.match(html,new RegExp('id="'+id+'"'));
 assert.match(renderer,/selectedRecipient=null;\s*messageInput.disabled=true;\s*sendButton.disabled=true;/);
 assert.match(renderer,/window\.ZERO_DESKTOP\.readMessages\(\)/);
+assert.match(renderer,/result\.offline/);
+assert.match(renderer,/await showDecrypted\(\)/);
 assert.match(renderer,/window\.ZERO_DESKTOP\.sendMessage\(selectedRecipient,messageInput\.value\)/);
 assert.doesNotMatch(renderer,/Decryption is not implemented/);
 assert.doesNotMatch(renderer,/async function refreshInbox\(/);
