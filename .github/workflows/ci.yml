@@ -25,6 +25,8 @@ jobs:
         run: pnpm typecheck
       - name: Run security-core tests
         run: pnpm test
+      - name: Test desktop identity, encryption, inbox and installer contracts
+        run: pnpm --dir apps/desktop test
       - name: Typecheck web
         run: pnpm --dir apps/web typecheck
       - name: Build Next.js web
