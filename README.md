@@ -1,5 +1,7 @@
 # ZERO
 
+![ZERO official wordmark](assets/branding/zero-wordmark.svg)
+
 **PIN. PRIVATE. TEMPORARY. GONE.**
 
 ZERO is a free, open-source, experimental privacy-first messaging project for Windows, Android, and iOS.
