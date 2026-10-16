@@ -18,7 +18,7 @@ assert.match(preload,/readMessages:\(\)/);
 assert.doesNotMatch(preload,/getInbox:/);
 const main=fs.readFileSync(path.join(__dirname,"main.cjs"),"utf8");
 assert.doesNotMatch(main,/ipcMain\.handle\("zero:inbox"/);
-assert.match(main,/typeof item\.id!=="string"\|\|!\/\^\[0-9a-f\]/);
+assert.ok(main.includes('typeof item.id!=="string"||!/^[0-9a-f]'),"Relay UUID validation is required");
 assert.ok(main.indexOf("typeof item.id")<main.indexOf("inboxStore.has(item.id)"),"Validate relay IDs before inbox lookup");
 const manifest=require("./package.json");
 for(const name of ["main.cjs","preload.cjs","device-identity.cjs","encryption-identity.cjs","secure-envelope.cjs","signed-message.cjs","replay-store.cjs","inbox-store.cjs","index.html","renderer.js"])assert.ok(manifest.build.files.includes(name),"Missing installer module: "+name);
