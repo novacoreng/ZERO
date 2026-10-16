@@ -21,6 +21,10 @@
       "main.cjs",
       "preload.cjs",
       "device-identity.cjs",
+      "replay-store.cjs",
+      "signed-message.cjs",
+      "secure-envelope.cjs",
+      "encryption-identity.cjs",
       "index.html",
       "renderer.js",
       "package.json"
