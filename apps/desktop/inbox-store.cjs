@@ -8,7 +8,8 @@ function validMessage(message){
  return message&&typeof message==="object"&&!Array.isArray(message)&&typeof message.id==="string"&&UUID.test(message.id)&&typeof message.sender==="string"&&PIN.test(message.sender)&&typeof message.plaintext==="string"&&Buffer.byteLength(message.plaintext,"utf8")<=32768&&typeof message.receivedAt==="string"&&Number.isFinite(Date.parse(message.receivedAt))&&typeof message.expiresAt==="string"&&Number.isFinite(Date.parse(message.expiresAt));
 }
 function createInboxStore(directory,safeStorage,ownerPin){
- if(!safeStorage.isEncryptionAvailable())throw Error("OS encryption unavailable");
+ if(!PIN.test(ownerPin))throw Error("Invalid inbox owner PIN");
+ if(!safeStorage||typeof safeStorage.isEncryptionAvailable!=="function"||!safeStorage.isEncryptionAvailable())throw Error("OS encryption unavailable");
  fs.mkdirSync(directory,{recursive:true,mode:0o700});
  const file=path.join(directory,"inbox.v1");
  let messages={};
@@ -24,7 +25,7 @@ function createInboxStore(directory,safeStorage,ownerPin){
   try{fs.writeFileSync(temp,JSON.stringify({version:1,ownerPin,encrypted}),{flag:"wx",mode:0o600});fs.renameSync(temp,file);}
   finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}
  }
- function has(id){if(!UUID.test(id))throw Error("Invalid message ID");return Object.hasOwn(messages,id);}
+ function has(id){if(typeof id!=="string"||!UUID.test(id))throw Error("Invalid message ID");return Object.hasOwn(messages,id);}
  function save(message){
   if(!validMessage(message))throw Error("Invalid inbox message");
   pruneExpired();
