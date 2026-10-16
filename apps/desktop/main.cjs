@@ -142,7 +142,14 @@ app.whenReady().then(()=>{
     const messages=[];
     for(const item of result.messages.slice(0,500)){
      if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string")continue;
-     if(replayStore.seen(item.id))continue;
+     if(replayStore.seen(item.id)){
+      // Retry acknowledgement after a previous network failure, without redisplaying.
+      try{
+       const retry=await fetch(new URL("/v1/messages/acknowledge",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({id:item.id}),signal:controller.signal});
+       if(!retry.ok)console.warn("ZERO: replay acknowledgement retry failed");
+      }catch{console.warn("ZERO: replay acknowledgement retry unavailable");}
+      continue;
+     }
      try{
       const senderResponse=await fetch(new URL("/v1/devices/"+item.sender,url),{signal:controller.signal});
       if(!senderResponse.ok)continue;
