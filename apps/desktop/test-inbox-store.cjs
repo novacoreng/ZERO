@@ -32,5 +32,19 @@ try{
  assert.throws(()=>failing.save(next),/Disk encryption failed/);
  assert.equal(failing.has(next.id),false);
  assert.equal(createInboxStore(directory,storage,pin).has(next.id),false);
+ // A failed expiry cleanup must leave the existing in-memory and disk records unchanged.
+ const cleanupDir=fs.mkdtempSync(path.join(os.tmpdir(),"zero-expiry-"));
+ try{
+  const shortLived={...message,id:"123e4567-e89b-42d3-a456-426614174006",expiresAt:new Date(Date.now()+150).toISOString()};
+  const initial=createInboxStore(cleanupDir,storage,pin);
+  assert.equal(initial.save(shortLived),true);
+  const failCleanup=createInboxStore(cleanupDir,broken,pin);
+  const waitUntil=Date.parse(shortLived.expiresAt);
+  while(Date.now()<=waitUntil){}
+  assert.throws(()=>failCleanup.list(),/Disk encryption failed/);
+  assert.equal(failCleanup.has(shortLived.id),true);
+  assert.equal(createInboxStore(cleanupDir,storage,pin).has(shortLived.id),true);
+  assert.deepEqual(createInboxStore(cleanupDir,storage,pin).list(),[]);
+ }finally{fs.rmSync(cleanupDir,{recursive:true,force:true});}
 }finally{fs.rmSync(directory,{recursive:true,force:true});}
 console.log("ZERO persistent encrypted inbox tests passed");
