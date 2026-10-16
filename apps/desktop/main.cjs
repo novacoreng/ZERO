@@ -4,12 +4,14 @@ const path=require("node:path");
 const {loadOrCreateEncryptionIdentity,verifyPublishedKey}=require("./encryption-identity.cjs");
 const {createSignedMessage,openSignedMessage}=require("./signed-message.cjs");
 const {createReplayStore}=require("./replay-store.cjs");
+const {createInboxStore}=require("./inbox-store.cjs");
 const {loadOrCreateIdentity,signChallenge}=require("./device-identity.cjs");
 let identity=null;
 let encryptionIdentity=null;
 let activationError=null;
 let sessionToken=null;
 let replayStore=null;
+let inboxStore=null;
 function createWindow(){
  const win=new BrowserWindow({width:1050,height:740,minWidth:700,minHeight:520,backgroundColor:"#151216",title:"ZERO",autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,"preload.cjs"),contextIsolation:true,nodeIntegration:false,sandbox:true}});
  win.setMenuBarVisibility(false);
@@ -22,6 +24,7 @@ app.whenReady().then(()=>{
   identity=loadOrCreateIdentity(path.join(app.getPath("userData"),"secure"),safeStorage);
   encryptionIdentity=loadOrCreateEncryptionIdentity(path.join(app.getPath("userData"),"secure"),safeStorage,identity);
   replayStore=createReplayStore(path.join(app.getPath("userData"),"secure"),safeStorage,identity.pin);
+  inboxStore=createInboxStore(path.join(app.getPath("userData"),"secure"),safeStorage,identity.pin);
  }catch(error){activationError=error instanceof Error?error.message:"Device activation failed";}
  ipcMain.handle("zero:identity",()=>{
   if(!identity)return {activated:false,error:activationError||"Device identity unavailable"};
@@ -142,7 +145,7 @@ app.whenReady().then(()=>{
     const messages=[];
     for(const item of result.messages.slice(0,500)){
      if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string")continue;
-     if(replayStore.seen(item.id)){
+     if(inboxStore.has(item.id)){
       // Retry acknowledgement after a previous network failure, without redisplaying.
       try{
        const retry=await fetch(new URL("/v1/messages/acknowledge",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({id:item.id}),signal:controller.signal});
@@ -156,15 +159,13 @@ app.whenReady().then(()=>{
       const sender=await senderResponse.json();
       if(sender.pin!==item.sender||require("./device-identity.cjs").fingerprint(sender.publicKey)!==item.sender)continue;
       const plaintext=openSignedMessage({sender:item.sender,recipient:identity.pin,identityPublicKey:sender.publicKey,recipientPrivateKey:encryptionIdentity.privateKey,envelope:item.encrypted});
-      // Record before acknowledging; on failure the message remains on the relay.
-      // This provides at-most-once local display, not guaranteed delivery.
-      replayStore.record(item.id,item.expiresAt);
-      messages.push({id:item.id,sender:item.sender,plaintext,receivedAt:item.receivedAt,expiresAt:item.expiresAt});
+      // Persist decrypted content with OS encryption before acknowledging relay delivery.
+      inboxStore.save({id:item.id,sender:item.sender,plaintext,receivedAt:item.receivedAt,expiresAt:item.expiresAt});
       const ack=await fetch(new URL("/v1/messages/acknowledge",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({id:item.id}),signal:controller.signal});
       if(!ack.ok)console.warn("ZERO: verified message acknowledgement pending");
      }catch{/* Unverified or malformed messages remain queued; never show plaintext. */}
     }
-    return {connected:true,messages};
+    return {connected:true,messages:inboxStore.list()};
    }finally{clearTimeout(timer);}
   }catch{return {connected:false,error:"Could not decrypt inbox"};}
  });
