@@ -1,0 +1,16 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const html=fs.readFileSync(path.join(__dirname,"index.html"),"utf8");
+const renderer=fs.readFileSync(path.join(__dirname,"renderer.js"),"utf8");
+const preload=fs.readFileSync(path.join(__dirname,"preload.cjs"),"utf8");
+for(const id of ["message-input","send-message","refresh-inbox","inbox-list","lookup","search","status"])assert.match(html,new RegExp('id="'+id+'"'));
+assert.match(renderer,/selectedRecipient=null;\s*messageInput.disabled=true;\s*sendButton.disabled=true;/);
+assert.match(renderer,/window\.ZERO_DESKTOP\.readMessages\(\)/);
+assert.match(renderer,/window\.ZERO_DESKTOP\.sendMessage\(selectedRecipient,messageInput\.value\)/);
+assert.doesNotMatch(renderer,/Decryption is not implemented/);
+assert.doesNotMatch(renderer,/async function refreshInbox\(/);
+assert.match(preload,/sendMessage:\(recipient,plaintext\)/);
+assert.match(preload,/readMessages:\(\)/);
+console.log("ZERO desktop renderer contract tests passed");
