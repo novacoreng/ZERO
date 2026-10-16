@@ -11,6 +11,8 @@ const message={id:"123e4567-e89b-42d3-a456-426614174000",sender:"STUV-WXYZ-2345-
 try{
  const first=createInboxStore(directory,storage,pin);
  assert.equal(first.has(message.id),false);
+ assert.throws(()=>first.has(123),/Invalid message ID/);
+ assert.throws(()=>createInboxStore(directory,storage,"invalid-owner"),/Invalid inbox owner PIN/);
  assert.equal(first.save(message),true);
  assert.equal(first.save(message),false);
  assert.deepEqual(first.list(),[message]);
