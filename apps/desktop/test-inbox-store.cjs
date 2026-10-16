@@ -40,17 +40,17 @@ try{
   assert.equal(initial.save(shortLived),true);
   const failCleanup=createInboxStore(cleanupDir,broken,pin);
   const originalNow=Date.now;
+  const expiredClock=()=>Date.parse(shortLived.expiresAt)+1;
   try{
-   Date.now=()=>Date.parse(shortLived.expiresAt)+1;
+   Date.now=expiredClock;
    assert.throws(()=>failCleanup.list(),/Disk encryption failed/);
   }finally{Date.now=originalNow;}
   assert.equal(failCleanup.has(shortLived.id),true);
   assert.equal(createInboxStore(cleanupDir,storage,pin).has(shortLived.id),true);
-  const originalNowAgain=Date.now;
   try{
-   Date.now=()=>Date.parse(shortLived.expiresAt)+1;
+   Date.now=expiredClock;
    assert.deepEqual(createInboxStore(cleanupDir,storage,pin).list(),[]);
-  }finally{Date.now=originalNowAgain;}
+  }finally{Date.now=originalNow;}
  }finally{fs.rmSync(cleanupDir,{recursive:true,force:true});}
 }finally{fs.rmSync(directory,{recursive:true,force:true});}
 console.log("ZERO persistent encrypted inbox tests passed");
