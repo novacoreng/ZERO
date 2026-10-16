@@ -164,7 +164,7 @@ app.whenReady().then(()=>{
       inboxStore.save({id:item.id,sender:item.sender,plaintext,receivedAt:item.receivedAt,expiresAt:item.expiresAt});
       const ack=await fetch(new URL("/v1/messages/acknowledge",url),{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+sessionToken},body:JSON.stringify({id:item.id}),signal:controller.signal});
       if(!ack.ok)console.warn("ZERO: verified message acknowledgement pending");
-     }catch{/* Unverified or malformed messages remain queued; never show plaintext. */}
+     }catch(error){console.warn("ZERO: message not acknowledged; validation, expiry, or encrypted storage failed",error instanceof Error?error.name:"UnknownError");}
     }
     return {connected:true,messages:inboxStore.list()};
    }finally{clearTimeout(timer);}
