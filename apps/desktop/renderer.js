@@ -23,7 +23,11 @@
  const sendButton=document.getElementById("send-message");
  const status=document.getElementById("status");
  async function showDecrypted(){
-  const result=await window.ZERO_DESKTOP.readMessages();
+  refresh.disabled=true;
+  let result;
+  try{result=await window.ZERO_DESKTOP.readMessages();}
+  catch{status.textContent="Inbox refresh failed";refresh.disabled=false;return;}
+  finally{refresh.disabled=false;}
   if(!result.connected){status.textContent=result.error||"Inbox unavailable";return;}
   inbox.replaceChildren();inbox.classList.toggle("has-items",result.messages.length>0);
   if(!result.messages.length){const empty=document.createElement("div");empty.textContent="No verified, decryptable messages yet.";inbox.append(empty);}
@@ -77,29 +81,6 @@
   }catch{status.textContent="Contact verification failed";}
   finally{lookup.disabled=false;}
  });
- async function refreshInbox(){
-  refresh.disabled=true;
-  try{
-   const result=await window.ZERO_DESKTOP.getInbox();
-   if(!result.connected){status.textContent=result.error||"Inbox unavailable";return;}
-   inbox.replaceChildren();
-   inbox.classList.toggle("has-items",result.messages.length>0);
-   if(!result.messages.length){
-    const empty=document.createElement("div");
-    const heading=document.createElement("strong");heading.textContent="No messages yet";
-    const detail=document.createElement("p");detail.textContent="Encrypted envelopes will appear here when sent to your PIN.";
-    empty.append(heading,detail);inbox.append(empty);
-   }else for(const message of result.messages){
-    const row=document.createElement("div");row.className="envelope";
-    const sender=document.createElement("strong");sender.textContent=message.sender;
-    const note=document.createElement("small");note.textContent="Encrypted envelope received. Decryption is not implemented.";
-    const time=document.createElement("small");time.textContent="Received: "+message.receivedAt;
-    row.append(sender,note,time);inbox.append(row);
-   }
-   status.textContent=result.messages.length+" encrypted envelope(s) in your inbox. Decryption is not available yet.";
-  }catch{status.textContent="Inbox refresh failed.";}
-  finally{refresh.disabled=false;}
- }
  refresh.addEventListener("click",showDecrypted);
  try{
   const identity=await window.ZERO_DESKTOP.getIdentity();
