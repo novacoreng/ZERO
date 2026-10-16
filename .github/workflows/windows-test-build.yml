@@ -29,9 +29,20 @@ jobs:
       - name: Build Windows NSIS installer
         working-directory: apps/desktop
         run: npm run dist:win
+      - name: Generate installer SHA-256 checksum
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem "apps/desktop/dist/*.exe" -File)
+          if ($installers.Count -eq 0) { throw "Windows installer missing" }
+          foreach ($installer in $installers) {
+            $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($installer.Name)" | Set-Content -LiteralPath "$($installer.FullName).sha256" -Encoding ascii
+          }
       - name: Upload Windows test installer
         uses: actions/upload-artifact@v4
         with:
           name: ZERO-Windows-Test
-          path: apps/desktop/dist/*.exe
+          path: |
+            apps/desktop/dist/*.exe
+            apps/desktop/dist/*.exe.sha256
           if-no-files-found: error
