@@ -21,3 +21,8 @@ A client MUST verify the returned identity key fingerprints to the expected PIN,
 
 ## Signed ciphertext requirement
 Every relayed encrypted envelope must include `signature`, a base64url Ed25519 signature over UTF-8 JSON encoding of the array `["ZERO-SIGNED-MESSAGE-V1",senderPIN,recipientPIN,algorithm,ephemeralPublicKey,salt,nonce,ciphertext]`. The relay validates signature shape only. **Recipients must independently fetch and verify the sender's identity key, then cryptographically verify the envelope signature before attempting decryption.** The server cannot authenticate ciphertext on the recipient's behalf. Replay prevention and key compromise recovery are not yet implemented. The composer remains disabled.
+
+## Desktop receive and acknowledgement semantics
+The desktop client verifies the sender's Ed25519 identity and signed envelope, then decrypts locally. It records the relay message UUID in an OS-encrypted local replay store before acknowledging it. When a previously recorded UUID remains in the relay inbox, the client retries acknowledgement without displaying the message again.
+
+**This is not durable message delivery.** The replay marker is committed before the UI renders plaintext. A crash after recording the marker can permanently prevent the UI from displaying that message. There is no encrypted persistent inbox or crash-safe renderer delivery acknowledgement yet. The relay is memory-backed and loses queued messages on restart. A sender can replay the same signed ciphertext in a new relay envelope with a different UUID. No ratchet, robust replay defense, or audited protocol is implemented. Do not market this prototype as production-secure E2EE.
