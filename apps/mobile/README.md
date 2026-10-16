@@ -24,3 +24,7 @@ Each mobile installation should generate its own asymmetric device identity usin
 
 ## Known CI blocker
 The current Expo Android bundling job has failed resolving `react-native-screens/experimental` imported by Expo Router. Dependency compatibility and the workspace lockfile must be resolved and verified before treating APK builds as successful.
+
+## License and contributions
+
+ZERO is free and open source under the [MIT License](../../LICENSE). Source code and contributions are managed at [novacoreng/ZERO](https://github.com/novacoreng/ZERO). Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) and [SECURITY.md](../../SECURITY.md) before contributing or reporting security issues.
