@@ -144,7 +144,7 @@ app.whenReady().then(()=>{
     const result=await response.json();
     if(!Array.isArray(result.messages))throw Error("Invalid inbox");
     for(const item of result.messages.slice(0,500)){
-     if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id))continue;
+     if(!item||typeof item!=="object"||item.recipient!==identity.pin||typeof item.sender!=="string"||!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(item.sender)||typeof item.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id))continue;
      if(inboxStore.has(item.id)){
       // Retry acknowledgement after a previous network failure, without redisplaying.
       try{
@@ -154,7 +154,6 @@ app.whenReady().then(()=>{
       continue;
      }
      try{
-      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id))continue;
       const senderResponse=await fetch(new URL("/v1/devices/"+item.sender,url),{signal:controller.signal});
       if(!senderResponse.ok)continue;
       const sender=await senderResponse.json();
