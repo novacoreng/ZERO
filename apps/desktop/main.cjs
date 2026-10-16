@@ -130,7 +130,8 @@ app.whenReady().then(()=>{
   }catch{return {sent:false,error:"Could not send encrypted message. Check contact key and connection."};}
  });
  ipcMain.handle("zero:read-messages",async()=>{
-  if(!identity||!encryptionIdentity||!sessionToken)return {connected:false,error:"Connect your device first"};
+  if(!identity||!encryptionIdentity||!inboxStore)return {connected:false,error:"Device identity unavailable"};
+  if(!sessionToken)return {connected:false,messages:inboxStore.list(),offline:true};
   try{
    const url=new URL(process.env.ZERO_REGISTRY_URL);
    if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw Error("Invalid protocol");
@@ -138,11 +139,10 @@ app.whenReady().then(()=>{
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
    try{
     const response=await fetch(new URL("/v1/messages/inbox",url),{headers:{authorization:"Bearer "+sessionToken},signal:controller.signal});
-    if(response.status===401){sessionToken=null;return {connected:false,error:"Session expired"};}
+    if(response.status===401){sessionToken=null;return {connected:false,messages:inboxStore.list(),offline:true,error:"Session expired. Saved messages remain available."};}
     if(!response.ok)throw Error("Inbox unavailable");
     const result=await response.json();
     if(!Array.isArray(result.messages))throw Error("Invalid inbox");
-    const messages=[];
     for(const item of result.messages.slice(0,500)){
      if(item.recipient!==identity.pin||typeof item.sender!=="string"||typeof item.id!=="string")continue;
      if(inboxStore.has(item.id)){
@@ -154,6 +154,7 @@ app.whenReady().then(()=>{
       continue;
      }
      try{
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id))continue;
       const senderResponse=await fetch(new URL("/v1/devices/"+item.sender,url),{signal:controller.signal});
       if(!senderResponse.ok)continue;
       const sender=await senderResponse.json();
@@ -167,7 +168,7 @@ app.whenReady().then(()=>{
     }
     return {connected:true,messages:inboxStore.list()};
    }finally{clearTimeout(timer);}
-  }catch{return {connected:false,error:"Could not decrypt inbox"};}
+  }catch{return {connected:false,messages:inboxStore.list(),offline:true,error:"Relay unavailable. Showing locally saved messages."};}
  });
  ipcMain.handle("zero:inbox",async()=>{
   if(!identity||!sessionToken)return {connected:false,error:"Connect your device first"};
