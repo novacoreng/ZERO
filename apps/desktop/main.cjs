@@ -27,11 +27,11 @@ app.whenReady().then(()=>{
   inboxStore=createInboxStore(path.join(app.getPath("userData"),"secure"),safeStorage,identity.pin);
  }catch(error){activationError=error instanceof Error?error.message:"Device activation failed";}
  ipcMain.handle("zero:identity",()=>{
-  if(!identity)return {activated:false,error:activationError||"Device identity unavailable"};
+  if(!identity||!encryptionIdentity||!inboxStore)return {activated:false,error:activationError||"Device identity unavailable"};
   return {activated:true,pin:identity.pin,publicKey:identity.publicKey};
  });
  ipcMain.handle("zero:authenticate",async()=>{
-  if(!identity)return {authenticated:false,error:"Device identity unavailable"};
+  if(!identity||!encryptionIdentity||!inboxStore)return {authenticated:false,error:"Device identity unavailable"};
   const base=process.env.ZERO_REGISTRY_URL;
   if(!base)return {authenticated:false,error:"Device registry is not configured"};
   try{
@@ -192,7 +192,7 @@ app.whenReady().then(()=>{
   }catch{return {connected:false,error:"Could not refresh inbox"};}
  });
  ipcMain.handle("zero:register",async()=>{
-  if(!identity)return {registered:false,error:"Local device identity unavailable"};
+  if(!identity||!encryptionIdentity||!inboxStore)return {registered:false,error:"Local device identity unavailable"};
   const base=process.env.ZERO_REGISTRY_URL;
   if(!base)return {registered:false,error:"Device registry is not configured"};
   let url;
