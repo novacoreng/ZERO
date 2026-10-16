@@ -20,5 +20,12 @@ try{
  assert.deepEqual(reopened.list(),[message]);
  assert.throws(()=>createInboxStore(directory,storage,"OTHER-DEVICE-0000"));
  assert.throws(()=>reopened.save({...message,id:"invalid"}));
+ assert.throws(()=>reopened.save({...message,id:"123e4567-e89b-42d3-a456-426614174001",expiresAt:new Date(Date.now()-1000).toISOString()}),/Expired/);
+ const broken={...storage,encryptString:()=>{throw Error("Disk encryption failed");}};
+ const failing=createInboxStore(directory,broken,pin);
+ const next={...message,id:"123e4567-e89b-42d3-a456-426614174002"};
+ assert.throws(()=>failing.save(next),/Disk encryption failed/);
+ assert.equal(failing.has(next.id),false);
+ assert.equal(createInboxStore(directory,storage,pin).has(next.id),false);
 }finally{fs.rmSync(directory,{recursive:true,force:true});}
 console.log("ZERO persistent encrypted inbox tests passed");
